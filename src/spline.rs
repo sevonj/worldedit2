@@ -1,7 +1,14 @@
 use bevy::{color::palettes::css::WHITE, prelude::*};
 
+use crate::editor::Selectable;
+
 #[derive(Component)]
-pub struct Spline(pub CubicCurve<Vec3>);
+pub struct Spline {
+    //pub name: Name,
+    //pub selectable: Selectable,
+    //pub transform: Transform,
+    pub curve: CubicCurve<Vec3>,
+}
 
 pub struct SplinePlugin;
 
@@ -11,9 +18,13 @@ impl Plugin for SplinePlugin {
     }
 }
 
-fn draw(query: Query<&Spline>, mut gizmos: Gizmos) {
-    for spline in &query {
-        gizmos.linestrip(spline.0.iter_positions(50), WHITE);
+fn draw(query: Query<(&Spline, &Transform)>, mut gizmos: Gizmos) {
+    for (spline, xform) in &query {
+        let origin = xform.translation;
+        gizmos.linestrip(
+            spline.curve.iter_positions(50).map(|val| val + origin),
+            WHITE,
+        );
     }
 }
 
