@@ -24,6 +24,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: Deps
+      run: sudo apt-get install librust-alsa-sys-dev      
     - name: Build
       run: cargo build --verbose
     - name: Run tests
