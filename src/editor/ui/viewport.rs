@@ -31,7 +31,7 @@ fn selection_ui(mut contexts: EguiContexts, selection: Query<Entity, With<Select
             let num_selected = selection.iter().count();
             let selection_text = match num_selected {
                 0 => "Nothing selected".to_string(),
-                1 => format!("1 entity selected"),
+                1 => "1 entity selected".to_string(),
                 n => format!("{n} entities selected"),
             };
 

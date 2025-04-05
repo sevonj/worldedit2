@@ -1,7 +1,5 @@
 use bevy::{color::palettes::css::WHITE, prelude::*};
 
-use crate::editor::Selectable;
-
 #[derive(Component)]
 pub struct Spline {
     //pub name: Name,

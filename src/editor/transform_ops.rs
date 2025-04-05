@@ -53,6 +53,7 @@ impl Plugin for TransformOpsPlugin {
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn update(
     mut op: ResMut<TransformOp>,
     q_selection: Query<&mut Transform, (With<Selectable>, With<Selected>)>,
@@ -112,7 +113,7 @@ fn update(
 
 fn update_axis_lock(op: &mut ResMut<TransformOp>, kb: &Res<ButtonInput<KeyCode>>) {
     match op.as_mut() {
-        TransformOp::None => return,
+        TransformOp::None => (),
         TransformOp::Move { axis_lock, .. }
         | TransformOp::Rotate(axis_lock)
         | TransformOp::Scale(axis_lock) => {
@@ -171,6 +172,7 @@ fn commit_op(
     *op = TransformOp::None;
 }
 
+#[allow(clippy::too_many_arguments)]
 fn op_move(
     mut q_selection: Query<&mut Transform, (With<Selectable>, With<Selected>)>,
     camera: &Camera,
