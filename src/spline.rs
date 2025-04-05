@@ -18,9 +18,8 @@ impl Plugin for SplinePlugin {
 
 fn draw(query: Query<(&Spline, &Transform)>, mut gizmos: Gizmos) {
     for (spline, xform) in &query {
-        let origin = xform.translation;
         gizmos.linestrip(
-            spline.curve.iter_positions(50).map(|val| val + origin),
+            spline.curve.iter_positions(50).map(|val| *xform * val),
             WHITE,
         );
     }
