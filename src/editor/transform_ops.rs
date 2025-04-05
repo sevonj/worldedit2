@@ -357,7 +357,7 @@ fn op_rotate(
     let angle = angle_between_signed(old_vector, new_vector, axis);
 
     for (mut xform, og_xform) in q_selection.iter_mut() {
-        xform.rotation = og_xform.0.rotation * Quat::from_axis_angle(axis, angle);
+        xform.rotation = Quat::from_axis_angle(axis, angle) * og_xform.0.rotation;
     }
 
     gizmos.circle(Isometry3d::from_translation(new_world_pos), 0.5, RED_100);
