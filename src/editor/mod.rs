@@ -1,4 +1,5 @@
 mod camera_rig_orbital;
+mod gizmos;
 mod ops;
 mod selection;
 mod transform_ops;
@@ -19,5 +20,6 @@ impl Plugin for EditorPlugin {
         app.add_plugins(CameraRigOrbital);
         app.add_plugins(SelectionPlugin);
         app.add_plugins(TransformOpsPlugin);
+        app.add_plugins(gizmos::GridFloorPlugin);
     }
 }
