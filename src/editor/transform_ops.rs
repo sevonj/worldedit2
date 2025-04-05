@@ -7,6 +7,8 @@ use bevy::{
 };
 use derive_more::Display;
 
+use crate::editor::Colors;
+
 use super::{camera_rig_orbital::CurrentCamera, selection::WithSelected, Selectable};
 
 #[derive(Resource, Debug, Default, PartialEq, Clone, Copy)]
@@ -134,13 +136,28 @@ fn op_runner(
     q_selection: Query<QXformOp, WithSelected>,
     q_camera: Query<QCamXform, WithCurrentCam>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
-    gizmos: Gizmos,
+    mut gizmos: Gizmos,
 ) {
     let (camera, camera_xform, camera_global) = q_camera.single();
+
+    match op.as_ref() {
+        TransformOp::None => return,
+        TransformOp::Move {
+            axis_lock,
+            op_origin,
+        }
+        | TransformOp::Rotate {
+            axis_lock,
+            op_origin,
+            ..
+        } => draw_axis_gizmo_lines(&mut gizmos, axis_lock, op_origin),
+        TransformOp::Scale(..) => todo!(),
+    }
+
     let window = q_windows.single();
 
     match op.as_ref() {
-        TransformOp::None => (),
+        TransformOp::None => unreachable!(),
         TransformOp::Move {
             axis_lock,
             op_origin: original_pos,
@@ -170,6 +187,42 @@ fn op_runner(
             gizmos,
         ),
         TransformOp::Scale(_axis_lock) => todo!(),
+    }
+}
+
+fn draw_axis_gizmo_lines(gizmos: &mut Gizmos<'_, '_>, axis_lock: &AxisLock, op_origin: &Vec3) {
+    const LINE_X: Vec3 = Vec3 {
+        x: 1024.,
+        y: 0.,
+        z: 0.,
+    };
+    const LINE_Y: Vec3 = Vec3 {
+        x: 0.,
+        y: 1024.,
+        z: 0.,
+    };
+    const LINE_Z: Vec3 = Vec3 {
+        x: 0.,
+        y: 0.,
+        z: 1024.,
+    };
+    match axis_lock {
+        AxisLock::Free => (),
+        AxisLock::X => gizmos.line(-LINE_X + op_origin, LINE_X + op_origin, Colors::AXIS_X),
+        AxisLock::Y => gizmos.line(-LINE_Y + op_origin, LINE_Y + op_origin, Colors::AXIS_Y),
+        AxisLock::Z => gizmos.line(-LINE_Z + op_origin, LINE_Z + op_origin, Colors::AXIS_Z),
+        AxisLock::PlaneX => {
+            gizmos.line(-LINE_Y + op_origin, LINE_Y + op_origin, Colors::AXIS_Y_SOFT);
+            gizmos.line(-LINE_Z + op_origin, LINE_Z + op_origin, Colors::AXIS_Z_SOFT);
+        }
+        AxisLock::PlaneY => {
+            gizmos.line(-LINE_X + op_origin, LINE_X + op_origin, Colors::AXIS_X_SOFT);
+            gizmos.line(-LINE_Z + op_origin, LINE_Z + op_origin, Colors::AXIS_Z_SOFT);
+        }
+        AxisLock::PlaneZ => {
+            gizmos.line(-LINE_X + op_origin, LINE_X + op_origin, Colors::AXIS_X_SOFT);
+            gizmos.line(-LINE_Y + op_origin, LINE_Y + op_origin, Colors::AXIS_Y_SOFT);
+        }
     }
 }
 
