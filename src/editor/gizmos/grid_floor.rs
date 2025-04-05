@@ -1,10 +1,11 @@
 use bevy::{
     asset::RenderAssetUsages,
-    color::palettes::tailwind::{BLUE_400, GRAY_500, GRAY_600, RED_400},
     math::{vec3a, Vec3A},
     prelude::*,
     render::mesh::PrimitiveTopology,
 };
+
+use crate::editor::Colors;
 
 pub struct GridFloorPlugin;
 
@@ -45,7 +46,7 @@ fn setup(
     commands.spawn((
         Mesh3d(level_0),
         MeshMaterial3d(materials.add(StandardMaterial {
-            base_color: Color::Srgba(GRAY_600),
+            base_color: Colors::GRID_MINOR.into(),
             unlit: true,
             ..default()
         })),
@@ -53,7 +54,7 @@ fn setup(
     commands.spawn((
         Mesh3d(level_1),
         MeshMaterial3d(materials.add(StandardMaterial {
-            base_color: Color::Srgba(GRAY_500),
+            base_color: Colors::GRID_MAJOR.into(),
             unlit: true,
             ..default()
         })),
@@ -61,7 +62,7 @@ fn setup(
     commands.spawn((
         Mesh3d(x_axis),
         MeshMaterial3d(materials.add(StandardMaterial {
-            base_color: Color::Srgba(RED_400),
+            base_color: Colors::AXIS_X.into(),
             unlit: true,
             ..default()
         })),
@@ -69,7 +70,7 @@ fn setup(
     commands.spawn((
         Mesh3d(z_axis),
         MeshMaterial3d(materials.add(StandardMaterial {
-            base_color: Color::Srgba(BLUE_400),
+            base_color: Colors::AXIS_Z.into(),
             unlit: true,
             ..default()
         })),

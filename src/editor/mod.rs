@@ -1,4 +1,5 @@
 mod camera_rig_orbital;
+mod colors;
 mod gizmos;
 mod selection;
 mod transform_ops;
@@ -6,6 +7,7 @@ pub mod ui;
 
 use bevy::app::Plugin;
 pub use camera_rig_orbital::CameraRigOrbital;
+pub use colors::Colors;
 pub use selection::Selectable;
 use selection::SelectionPlugin;
 use transform_ops::TransformOpsPlugin;
