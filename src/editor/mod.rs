@@ -1,8 +1,8 @@
 mod camera_rig_orbital;
+mod ops;
 mod selection;
 mod transform_ops;
 pub mod ui;
-mod ops;
 
 use bevy::app::Plugin;
 pub use camera_rig_orbital::CameraRigOrbital;

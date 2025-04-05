@@ -2,12 +2,10 @@
 
 use bevy::{
     color::palettes::tailwind::{CYAN_100, RED_100},
-    input::mouse::MouseMotion,
     prelude::*,
     window::PrimaryWindow,
 };
 use derive_more::Display;
-use procedural_modelling::math::Transformable;
 
 use super::{camera_rig_orbital::CurrentCamera, selection::Selected, Selectable};
 
@@ -44,15 +42,6 @@ pub enum AxisLock {
     PlaneX,
     PlaneY,
     PlaneZ,
-}
-
-impl AxisLock {
-    pub fn is_plane(&self) -> bool {
-        match self {
-            AxisLock::X | AxisLock::Y | AxisLock::Z => false,
-            _ => true,
-        }
-    }
 }
 
 pub struct TransformOpsPlugin;
@@ -194,23 +183,53 @@ fn op_move(
 ) {
     gizmos.circle(Isometry3d::from_translation(*original_pos), 0.5, CYAN_100);
 
+    let look = camera_xform.forward().as_vec3();
+    const X: Vec3 = Vec3::AXES[0];
+    const Y: Vec3 = Vec3::AXES[1];
+    const Z: Vec3 = Vec3::AXES[2];
     let move_axis = match axis_lock {
-        AxisLock::Free => camera_xform.forward().as_vec3(),
-        AxisLock::X => Dir3::X.as_vec3(),
+        AxisLock::Free => look,
+        AxisLock::X => {
+            let right = X.cross(look);
+            X.cross(right)
+        }
         AxisLock::Y => {
-            Vec3::new(0., camera_xform.rotation.y, 0.)
-        },
-        AxisLock::Z => Dir3::Z.as_vec3(),
+            let right = Y.cross(look);
+            Y.cross(right)
+        }
+        AxisLock::Z => {
+            let right = Z.cross(look);
+            Z.cross(right)
+        }
         AxisLock::PlaneX => Dir3::X.as_vec3(),
         AxisLock::PlaneY => Dir3::Y.as_vec3(),
         AxisLock::PlaneZ => Dir3::Z.as_vec3(),
     };
     let plane = InfinitePlane3d::new(move_axis);
-    if let Some(pos) = plane_line_intersect(window, camera, camera_global, &plane, original_pos)
-    {
-        for mut xform in q_selection.iter_mut() {
-            xform.translation = pos;
+    if let Some(pos) = plane_line_intersect(window, camera, camera_global, &plane, original_pos) {
+        match axis_lock {
+            AxisLock::X => {
+                for mut xform in q_selection.iter_mut() {
+                    xform.translation.x = pos.x;
+                }
+            }
+            AxisLock::Y => {
+                for mut xform in q_selection.iter_mut() {
+                    xform.translation.y = pos.y;
+                }
+            }
+            AxisLock::Z => {
+                for mut xform in q_selection.iter_mut() {
+                    xform.translation.z = pos.z;
+                }
+            }
+            AxisLock::Free | AxisLock::PlaneX | AxisLock::PlaneY | AxisLock::PlaneZ => {
+                for mut xform in q_selection.iter_mut() {
+                    xform.translation = pos;
+                }
+            }
         }
+
         gizmos.circle(Isometry3d::from_translation(pos), 0.5, RED_100);
     }
 }
