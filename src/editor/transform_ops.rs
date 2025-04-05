@@ -1,7 +1,10 @@
 //! Transform operations for selection - Move, rotate, scale
 
 use bevy::{
-    color::palettes::tailwind::{CYAN_100, RED_100},
+    color::palettes::{
+        css::ORANGE,
+        tailwind::{CYAN_100, RED_100},
+    },
     prelude::*,
     window::PrimaryWindow,
 };
@@ -107,7 +110,7 @@ fn op_switcher(
         }
         *op = TransformOp::Move {
             axis_lock: AxisLock::default(),
-            op_origin: selection_center(&selection),
+            op_origin: selection_bb_center(&selection),
         };
     } else if kb.just_pressed(KeyCode::KeyR) {
         let Some(original_cursor_pos) = window.cursor_position() else {
@@ -121,7 +124,7 @@ fn op_switcher(
         }
         *op = TransformOp::Rotate {
             axis_lock: AxisLock::default(),
-            op_origin: selection_center(&selection),
+            op_origin: selection_bb_center(&selection),
             original_cursor_pos,
         };
     }
@@ -198,14 +201,14 @@ fn update_axis_lock(op: &mut ResMut<TransformOp>, kb: &Res<ButtonInput<KeyCode>>
     }
 }
 
-fn selection_center(query: &Query<QXformOpPossible, WithSelected>) -> Vec3 {
+fn selection_bb_center(query: &Query<QXformOpPossible, WithSelected>) -> Vec3 {
     let mut min_translation = Vec3::INFINITY;
     let mut max_translation = -Vec3::INFINITY;
     for (_, xform, ..) in query.iter() {
         min_translation = min_translation.min(xform.translation);
         max_translation = max_translation.max(xform.translation);
     }
-    max_translation - min_translation / 2.0
+    (max_translation + min_translation) / 2.0
 }
 
 fn init_op(commands: &mut Commands, selection: &Query<QXformOpPossible, WithSelected>) {
