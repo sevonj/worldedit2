@@ -11,6 +11,8 @@ pub struct Selectable;
 #[require(Selectable)]
 pub struct Selected;
 
+pub type WithSelected = (With<Selectable>, With<Selected>);
+
 pub struct SelectionPlugin;
 
 impl Plugin for SelectionPlugin {
