@@ -1,10 +1,7 @@
 //! Transform operations for selection - Move, rotate, scale
 
 use bevy::{
-    color::palettes::{
-        css::ORANGE,
-        tailwind::{CYAN_100, RED_100},
-    },
+    color::palettes::tailwind::{CYAN_100, RED_100},
     prelude::*,
     window::PrimaryWindow,
 };

@@ -1,6 +1,5 @@
 mod camera_rig_orbital;
 mod gizmos;
-mod ops;
 mod selection;
 mod transform_ops;
 pub mod ui;
