@@ -56,7 +56,7 @@ fn xform_ops_ui(mut contexts: EguiContexts, op: Res<TransformOp>) {
                     ui.label("S: Scale");
                 }
                 TransformOp::Move { axis_lock, .. }
-                | TransformOp::Rotate(axis_lock)
+                | TransformOp::Rotate { axis_lock, .. }
                 | TransformOp::Scale(axis_lock) => {
                     ui.label("Esc: cancel selection");
                     ui.label(format!("axis: {axis_lock}"));
