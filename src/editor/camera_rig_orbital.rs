@@ -4,6 +4,11 @@ use bevy::{
     window::{CursorGrabMode, PrimaryWindow},
 };
 
+use super::transform_ops::TransformOp;
+
+#[derive(Component)]
+pub struct CurrentCamera;
+
 #[derive(Component)]
 struct CameraRigOrbitalData {
     /// Position the camera orbits around
@@ -38,7 +43,10 @@ fn setup(mut commands: Commands) {
     commands.spawn((
         Camera3d::default(),
         Transform::default(),
+        GlobalTransform::default(),
         CameraRigOrbitalData::default(),
+        Name::new("CameraRigOrbital"),
+        CurrentCamera,
     ));
 }
 
@@ -49,10 +57,15 @@ fn update_camera(
     keyb: Res<ButtonInput<KeyCode>>,
     mut q_windows: Query<&mut Window, With<PrimaryWindow>>,
     mut query: Query<(&mut CameraRigOrbitalData, &mut Transform), With<Camera3d>>,
+    op: Res<TransformOp>,
 ) {
-    let mut window = q_windows.single_mut();
-
     let (mut data, mut xform) = query.single_mut();
+    if *op != TransformOp::None {
+        refresh_camera_xform(&mut data, &mut xform);
+        return;
+    }
+
+    let mut window = q_windows.single_mut();
 
     if mouse_b.pressed(MouseButton::Middle) {
         window.cursor_options.grab_mode = CursorGrabMode::Locked;
@@ -85,7 +98,6 @@ fn update_camera(
                 // Untested
                 MouseScrollUnit::Pixel => 0.99 * ev.y.abs(),
             };
-            println!("{:?}", ev.unit);
             if ev.y < 0. {
                 mult = 1. / mult;
             }
