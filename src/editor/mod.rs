@@ -2,7 +2,7 @@ mod camera_rig_orbital;
 mod colors;
 mod gizmos;
 mod selection;
-mod transform_ops;
+mod selection_ops;
 pub mod ui;
 
 use bevy::app::Plugin;
@@ -10,7 +10,7 @@ pub use camera_rig_orbital::CameraRigOrbital;
 pub use colors::Colors;
 pub use selection::Selectable;
 use selection::SelectionPlugin;
-use transform_ops::TransformOpsPlugin;
+use selection_ops::SelectionOpsPlugin;
 use ui::EditorGuiPlugin;
 
 pub struct EditorPlugin;
@@ -20,7 +20,7 @@ impl Plugin for EditorPlugin {
         app.add_plugins(EditorGuiPlugin);
         app.add_plugins(CameraRigOrbital);
         app.add_plugins(SelectionPlugin);
-        app.add_plugins(TransformOpsPlugin);
+        app.add_plugins(SelectionOpsPlugin);
         app.add_plugins(gizmos::GridFloorPlugin);
     }
 }
