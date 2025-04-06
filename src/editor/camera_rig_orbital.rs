@@ -4,7 +4,7 @@ use bevy::{
     window::{CursorGrabMode, PrimaryWindow},
 };
 
-use super::transform_ops::TransformOp;
+use super::selection_ops::SelectionOpsState;
 
 #[derive(Component)]
 pub struct CurrentCamera;
@@ -57,10 +57,10 @@ fn update_camera(
     keyb: Res<ButtonInput<KeyCode>>,
     mut q_windows: Query<&mut Window, With<PrimaryWindow>>,
     mut query: Query<(&mut CameraRigOrbitalData, &mut Transform), With<Camera3d>>,
-    op: Res<TransformOp>,
+    op: Res<SelectionOpsState>,
 ) {
     let (mut data, mut xform) = query.single_mut();
-    if *op != TransformOp::None {
+    if *op != SelectionOpsState::None {
         refresh_camera_xform(&mut data, &mut xform);
         return;
     }

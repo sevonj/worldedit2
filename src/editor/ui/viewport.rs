@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_egui::{egui::Window, EguiContexts};
 
-use crate::editor::{selection::Selected, transform_ops::TransformOp};
+use crate::editor::{selection::Selected, selection_ops::transform_ops::TransformOp};
 
 #[derive(Debug)]
 pub struct ViewportGui;

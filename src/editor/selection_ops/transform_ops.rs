@@ -9,7 +9,9 @@ use derive_more::Display;
 
 use crate::editor::Colors;
 
-use super::{camera_rig_orbital::CurrentCamera, selection::WithSelected, Selectable};
+use crate::editor::{camera_rig_orbital::CurrentCamera, selection::WithSelected, Selectable};
+
+use super::SelectionOpsState;
 
 #[derive(Resource, Debug, Default, PartialEq, Clone, Copy)]
 pub enum TransformOp {
@@ -78,12 +80,19 @@ fn op_switcher(
     mut commands: Commands,
     mut op: ResMut<TransformOp>,
     mut selection: Query<QXformOpPossible, WithSelected>,
+    mut selection_state: ResMut<SelectionOpsState>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
     kb: Res<ButtonInput<KeyCode>>,
     mb: Res<ButtonInput<MouseButton>>,
 ) {
+    #[allow(unreachable_patterns)] // There will be more
+    match *selection_state {
+        SelectionOpsState::None | SelectionOpsState::Transform => (),
+        _ => return,
+    }
+
     if selection.is_empty() {
-        *op = TransformOp::None;
+        cleanup_op(&mut commands, &mut selection, &mut selection_state, &mut op);
         return;
     }
 
@@ -91,19 +100,19 @@ fn op_switcher(
 
     if kb.just_pressed(KeyCode::Escape) {
         if *op != TransformOp::None {
-            cancel_op(&mut commands, &mut selection, &mut op);
+            cancel_op(&mut commands, &mut selection, &mut selection_state, &mut op);
         }
         return;
     }
 
     if kb.just_pressed(KeyCode::Enter) || mb.just_pressed(MouseButton::Left) {
-        commit_op(&mut commands, &mut selection, &mut op);
+        commit_op(&mut commands, &mut selection, &mut selection_state, &mut op);
         return;
     }
 
     if kb.just_pressed(KeyCode::KeyG) {
         match *op {
-            TransformOp::None => init_op(&mut commands, &selection),
+            TransformOp::None => init_op(&mut commands, &selection, &mut selection_state),
             TransformOp::Move { .. } => return,
             _ => undo_changes(&mut selection),
         }
@@ -117,7 +126,7 @@ fn op_switcher(
         };
 
         match *op {
-            TransformOp::None => init_op(&mut commands, &selection),
+            TransformOp::None => init_op(&mut commands, &selection, &mut selection_state),
             TransformOp::Rotate { .. } => return,
             _ => undo_changes(&mut selection),
         }
@@ -261,11 +270,16 @@ fn selection_bb_center(query: &Query<QXformOpPossible, WithSelected>) -> Vec3 {
     (max_translation + min_translation) / 2.0
 }
 
-fn init_op(commands: &mut Commands, selection: &Query<QXformOpPossible, WithSelected>) {
+fn init_op(
+    commands: &mut Commands,
+    selection: &Query<QXformOpPossible, WithSelected>,
+    selection_state: &mut ResMut<SelectionOpsState>,
+) {
     for (entity, xform, og_xform) in selection.iter() {
         assert!(og_xform.is_none());
         commands.entity(entity).insert(OriginalTransform(*xform));
     }
+    **selection_state = SelectionOpsState::Transform;
 }
 
 fn undo_changes(selection: &mut Query<QXformOpPossible, WithSelected>) {
@@ -279,6 +293,7 @@ fn undo_changes(selection: &mut Query<QXformOpPossible, WithSelected>) {
 fn cleanup_op(
     commands: &mut Commands,
     selection: &mut Query<QXformOpPossible, WithSelected>,
+    selection_state: &mut ResMut<SelectionOpsState>,
     op: &mut TransformOp,
 ) {
     match op {
@@ -290,23 +305,26 @@ fn cleanup_op(
         }
     }
     *op = TransformOp::None;
+    **selection_state = SelectionOpsState::None;
 }
 
 fn cancel_op(
     commands: &mut Commands,
     selection: &mut Query<QXformOpPossible, WithSelected>,
+    selection_state: &mut ResMut<SelectionOpsState>,
     op: &mut TransformOp,
 ) {
     undo_changes(selection);
-    cleanup_op(commands, selection, op);
+    cleanup_op(commands, selection, selection_state, op);
 }
 
 fn commit_op(
     commands: &mut Commands,
     selection: &mut Query<QXformOpPossible, WithSelected>,
+    selection_state: &mut ResMut<SelectionOpsState>,
     op: &mut TransformOp,
 ) {
-    cleanup_op(commands, selection, op);
+    cleanup_op(commands, selection, selection_state, op);
 }
 
 #[allow(clippy::too_many_arguments)]
