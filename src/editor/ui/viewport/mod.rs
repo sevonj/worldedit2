@@ -1,18 +1,45 @@
+mod rt;
+
 use bevy::prelude::*;
-use bevy_egui::{egui::Window, EguiContexts};
+use bevy_egui::{
+    egui::{CentralPanel, Frame, Window},
+    EguiContexts,
+};
 
 use crate::editor::{selection::Selected, selection_ops::transform_ops::TransformOp};
+
+pub use rt::ViewportRT;
 
 #[derive(Debug)]
 pub struct ViewportGui;
 
 impl Plugin for ViewportGui {
     fn build(&self, app: &mut App) {
+        rt::build(app);
         app.add_systems(
             Update,
-            (camera_controls_ui, selection_ui, xform_ops_ui).chain(),
+            (
+                draw_viewport_ui,
+                camera_controls_ui,
+                selection_ui,
+                xform_ops_ui,
+            )
+                .chain(),
         );
     }
+}
+
+fn draw_viewport_ui(
+    mut contexts: EguiContexts,
+    viewport_img: Res<ViewportRT>,
+    images: ResMut<Assets<Image>>,
+) {
+    let viewport_tex_id = contexts.image_id(&viewport_img).unwrap();
+    let ctx = contexts.ctx_mut();
+
+    CentralPanel::default().frame(Frame::NONE).show(ctx, |ui| {
+        rt::viewport_rt_ui(viewport_img, images, viewport_tex_id, ui);
+    });
 }
 
 fn camera_controls_ui(mut contexts: EguiContexts) {
