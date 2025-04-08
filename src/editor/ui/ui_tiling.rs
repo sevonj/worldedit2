@@ -2,16 +2,15 @@
 //!
 //!
 
-use std::usize;
-
 use bevy::prelude::*;
-use bevy_egui::{
-    egui::{self, CentralPanel, Frame, Ui},
-    EguiContext,
-};
-use egui_tiles::{Behavior, SimplificationOptions, TileId, Tiles, Tree};
 
 use super::{editor_pane::EditorPane, outliner_pane::OutlinerPane, viewport_pane::ViewportPane};
+use bevy_egui::{
+    egui::{self, CentralPanel, Frame, Ui},
+    EguiContext, EguiContextPass,
+};
+
+use egui_tiles::{Behavior, SimplificationOptions, TileId, Tiles, Tree};
 
 #[derive(Debug, Resource)]
 pub enum TilingPane {
@@ -39,7 +38,7 @@ impl Plugin for UiTilingPlugin {
         let root = tiles.insert_horizontal_tile(vec![]);
 
         app.insert_resource(TileTree(Tree::new("my_tree", root, tiles)));
-        app.add_systems(Update, draw_editor_ui);
+        app.add_systems(EguiContextPass, draw_editor_ui);
     }
 }
 
@@ -47,7 +46,7 @@ struct TreeBehavior<'a> {
     pub world: &'a mut World,
 }
 
-impl<'a> Behavior<TilingPane> for TreeBehavior<'a> {
+impl Behavior<TilingPane> for TreeBehavior<'_> {
     fn tab_title_for_pane(&mut self, pane: &TilingPane) -> egui::WidgetText {
         match pane {
             TilingPane::ViewPort(pane) => pane.title().into(),
@@ -76,7 +75,13 @@ impl<'a> Behavior<TilingPane> for TreeBehavior<'a> {
 }
 
 fn draw_editor_ui(world: &mut World) {
-    let mut context = world.query::<&mut EguiContext>().single_mut(world).clone();
+    let Ok(mut context) = world
+        .query::<&mut EguiContext>()
+        .single_mut(world)
+        .map(|w| w.clone())
+    else {
+        return;
+    };
     let ctx = context.get_mut();
 
     world.resource_scope::<TileTree, _>(|world, mut tree| {

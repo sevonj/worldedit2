@@ -37,7 +37,7 @@ impl ViewportPane {
     pub fn new(viewport_tex_id: egui::TextureId) -> Self {
         Self {
             viewport_tex_id,
-            size: egui::vec2(0., 0.),
+            size: egui::vec2(16., 16.),
         }
     }
 
