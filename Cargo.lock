@@ -3235,11 +3235,7 @@ dependencies = [
  "vec_map",
  "wasm-bindgen",
  "web-sys",
-<<<<<<< HEAD
  "windows 0.61.1",
-=======
- "windows 0.58.0",
->>>>>>> 1d5b2c9 (chore: bevy upgrade)
 ]
 
 [[package]]
@@ -5938,15 +5934,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "toml"
-<<<<<<< HEAD
 version = "0.8.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "05ae329d1f08c4d17a59bed7ff5b5a769d062e64a62d34a3261b219e62cd5aae"
-=======
-version = "0.8.21"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "900f6c86a685850b1bc9f6223b20125115ee3f31e01207d81655bbcc0aea9231"
->>>>>>> 1d5b2c9 (chore: bevy upgrade)
 dependencies = [
  "serde",
  "serde_spanned",
@@ -5965,15 +5955,9 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-<<<<<<< HEAD
 version = "0.22.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "310068873db2c5b3e7659d2cc35d21855dbafa50d1ce336397c666e3cb08137e"
-=======
-version = "0.22.25"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "10558ed0bd2a1562e630926a2d1f0b98c827da99fabd3fe20920a59642504485"
->>>>>>> 1d5b2c9 (chore: bevy upgrade)
 dependencies = [
  "indexmap",
  "serde",
@@ -6788,7 +6772,6 @@ dependencies = [
 ]
 
 [[package]]
-<<<<<<< HEAD
 name = "windows"
 version = "0.61.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6811,8 +6794,6 @@ dependencies = [
 ]
 
 [[package]]
-=======
->>>>>>> 1d5b2c9 (chore: bevy upgrade)
 name = "windows-core"
 version = "0.54.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6843,12 +6824,11 @@ dependencies = [
  "windows-implement 0.58.0",
  "windows-interface 0.58.0",
  "windows-result 0.2.0",
- "windows-strings",
+ "windows-strings 0.1.0",
  "windows-targets 0.52.6",
 ]
 
 [[package]]
-<<<<<<< HEAD
 name = "windows-core"
 version = "0.61.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6872,8 +6852,6 @@ dependencies = [
 ]
 
 [[package]]
-=======
->>>>>>> 1d5b2c9 (chore: bevy upgrade)
 name = "windows-implement"
 version = "0.57.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6896,7 +6874,6 @@ dependencies = [
 ]
 
 [[package]]
-<<<<<<< HEAD
 name = "windows-implement"
 version = "0.60.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6908,8 +6885,6 @@ dependencies = [
 ]
 
 [[package]]
-=======
->>>>>>> 1d5b2c9 (chore: bevy upgrade)
 name = "windows-interface"
 version = "0.57.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6932,7 +6907,6 @@ dependencies = [
 ]
 
 [[package]]
-<<<<<<< HEAD
 name = "windows-interface"
 version = "0.59.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6960,8 +6934,6 @@ dependencies = [
 ]
 
 [[package]]
-=======
->>>>>>> 1d5b2c9 (chore: bevy upgrade)
 name = "windows-result"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6980,7 +6952,6 @@ dependencies = [
 ]
 
 [[package]]
-<<<<<<< HEAD
 name = "windows-result"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6990,8 +6961,6 @@ dependencies = [
 ]
 
 [[package]]
-=======
->>>>>>> 1d5b2c9 (chore: bevy upgrade)
 name = "windows-strings"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7002,7 +6971,6 @@ dependencies = [
 ]
 
 [[package]]
-<<<<<<< HEAD
 name = "windows-strings"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7012,8 +6980,6 @@ dependencies = [
 ]
 
 [[package]]
-=======
->>>>>>> 1d5b2c9 (chore: bevy upgrade)
 name = "windows-sys"
 version = "0.45.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
