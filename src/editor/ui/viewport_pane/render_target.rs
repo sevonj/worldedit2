@@ -9,17 +9,16 @@ use bevy::{
         },
     },
 };
-use bevy_egui::{egui, EguiUserTextures};
+use bevy_egui::EguiUserTextures;
+use egui_tiles::Tile;
 
-use crate::editor::camera_rig_orbital::CurrentCamera;
+use crate::editor::{
+    camera_rig_orbital::CurrentCamera,
+    ui::{ui_tiling::{TileTree, TilingPane}, viewport_pane::ViewportPane},
+};
 
 #[derive(Deref, Resource)]
 pub struct ViewportRT(pub Handle<Image>);
-
-pub fn build(app: &mut App) {
-    app.add_systems(Startup, create_viewport_img);
-    app.add_systems(PreUpdate, refresh_camera_rt_img);
-}
 
 /// Create viewport render target image
 pub fn create_viewport_img(
@@ -28,8 +27,8 @@ pub fn create_viewport_img(
     mut images: ResMut<Assets<Image>>,
 ) {
     let size = Extent3d {
-        width: 512,
-        height: 512,
+        width: 64,
+        height: 64,
         ..default()
     };
 
@@ -57,36 +56,34 @@ pub fn create_viewport_img(
 }
 
 /// Sets camera to target viewport RT image
-pub fn refresh_camera_rt_img(
+pub fn refresh_camera_target(
     mut q_camera: Query<&mut Camera, With<CurrentCamera>>,
     viewport_img: Res<ViewportRT>,
 ) {
     let mut camera = q_camera.single_mut();
+    camera.viewport = None;
     camera.target = RenderTarget::Image(viewport_img.0.clone());
 }
 
-/// Build UI
-pub fn viewport_rt_ui(
-    viewport_img: Res<'_, ViewportRT>,
-    images: ResMut<'_, Assets<Image>>,
-    viewport_tex_id: egui::TextureId,
-    ui: &mut egui::Ui,
+pub fn update_viewport_img_size(
+    mut images: ResMut<Assets<Image>>,
+    viewport_img: Res<ViewportRT>,
+    tree: Res<TileTree>,
 ) {
-    let size = ui.available_size();
+    // TODO: yeah this is dumb
+    fn find_the_pane<'a>(tree: &'a Res<'a, TileTree>) -> Option<&'a ViewportPane> {
+        for tile in tree.0.tiles.tiles() {
+            if let Tile::Pane(TilingPane::ViewPort(pane)) = tile {
+                return Some(pane);
+            }
+        }
+        None
+    }
 
-    egui::Image::new(egui::load::SizedTexture::new(viewport_tex_id, size))
-        .corner_radius(4.)
-        .paint_at(ui, ui.ctx().screen_rect());
+    let img = images.get_mut(&viewport_img.0).expect("no viewport image");
+    let viewport_pane = find_the_pane(&tree).unwrap();
+    let size = viewport_pane.size();
 
-    refresh_img_size(images, &viewport_img.0, size);
-}
-
-fn refresh_img_size(
-    mut images: ResMut<'_, Assets<Image>>,
-    handle: &Handle<Image>,
-    size: bevy_egui::egui::Vec2,
-) {
-    let img = images.get_mut(handle).expect("no viewport image");
     if img.width() != size.x as u32 || img.height() != size.y as u32 {
         img.resize(Extent3d {
             width: size.x as u32,
