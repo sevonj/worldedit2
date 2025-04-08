@@ -4,13 +4,13 @@
 
 use bevy::prelude::*;
 
-use super::{editor_pane::EditorPane, outliner_pane::OutlinerPane, viewport_pane::ViewportPane};
 use bevy_egui::{
     egui::{self, CentralPanel, Frame, Ui},
     EguiContext, EguiContextPass,
 };
-
 use egui_tiles::{Behavior, SimplificationOptions, TileId, Tiles, Tree};
+
+use super::{editor_pane::EditorPane, outliner_pane::OutlinerPane, viewport_pane::ViewportPane};
 
 #[derive(Debug, Resource)]
 pub enum TilingPane {
