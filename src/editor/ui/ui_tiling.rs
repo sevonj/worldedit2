@@ -2,8 +2,7 @@
 //!
 //!
 
-use bevy::prelude::*;
-
+use bevy::{ecs::world::CommandQueue, prelude::*};
 use bevy_egui::{
     egui::{self, CentralPanel, Frame, Ui},
     EguiContext, EguiContextPass,
@@ -44,6 +43,7 @@ impl Plugin for UiTilingPlugin {
 
 struct TreeBehavior<'a> {
     pub world: &'a mut World,
+    pub commands: Commands<'a, 'a>,
 }
 
 impl Behavior<TilingPane> for TreeBehavior<'_> {
@@ -68,13 +68,14 @@ impl Behavior<TilingPane> for TreeBehavior<'_> {
         pane: &mut TilingPane,
     ) -> egui_tiles::UiResponse {
         match pane {
-            TilingPane::ViewPort(pane) => pane.ui(ui, self.world),
-            TilingPane::Outliner(pane) => pane.ui(ui, self.world),
+            TilingPane::ViewPort(pane) => pane.ui(ui, self.world, &mut self.commands),
+            TilingPane::Outliner(pane) => pane.ui(ui, self.world, &mut self.commands),
         }
     }
 }
 
 fn draw_editor_ui(world: &mut World) {
+    // Extract egui context from the world
     let Ok(mut context) = world
         .query::<&mut EguiContext>()
         .single_mut(world)
@@ -84,10 +85,19 @@ fn draw_editor_ui(world: &mut World) {
     };
     let ctx = context.get_mut();
 
+    // Extract commands from the world
+    // ⚠️: unsafe, unclear how dangerous this is.
+    let unsafe_world_cell = world.as_unsafe_world_cell();
+    let mut queue = CommandQueue::default();
+    let commands = Commands::new(&mut queue, unsafe { unsafe_world_cell.world() });
+    let world = unsafe { unsafe_world_cell.world_mut() };
+
     world.resource_scope::<TileTree, _>(|world, mut tree| {
         CentralPanel::default().frame(Frame::NONE).show(ctx, |ui| {
-            let mut behavior = TreeBehavior { world };
+            let mut behavior = TreeBehavior { world, commands };
             tree.0.ui(&mut behavior, ui);
         });
     });
+
+    queue.apply(world);
 }

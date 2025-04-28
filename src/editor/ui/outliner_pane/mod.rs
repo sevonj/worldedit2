@@ -24,11 +24,16 @@ type SelectableQuery<'a> = (Entity, Option<&'a Name>, Option<&'a Selected>);
 pub struct OutlinerPane;
 
 impl EditorPane for OutlinerPane {
-    fn ui(&mut self, ui: &mut bevy_egui::egui::Ui, world: &mut World) -> egui_tiles::UiResponse {
+    fn ui(
+        &mut self,
+        ui: &mut bevy_egui::egui::Ui,
+        world: &mut World,
+        commands: &mut Commands,
+    ) -> egui_tiles::UiResponse {
         let mut query = world.query_filtered::<SelectableQuery, With<Selectable>>();
 
         let entities = query.iter(world);
-        outliner_ui(ui, /*commands,*/ entities);
+        outliner_ui(ui, commands, entities);
 
         egui_tiles::UiResponse::None
     }
@@ -44,7 +49,7 @@ fn register_pane(mut tree: ResMut<TileTree>) {
 
 fn outliner_ui(
     ui: &mut Ui,
-    //mut commands: Commands,
+    commands: &mut Commands,
     entities: QueryIter<SelectableQuery, With<Selectable>>,
 ) {
     let tablebuilder = TableBuilder::new(ui).column(Column::auto());
@@ -60,9 +65,9 @@ fn outliner_ui(
                     let button = egui::SelectableLabel::new(is_selected, text);
                     if ui.add(button).clicked() {
                         if is_selected {
-                            // commands.entity(entity).remove::<Selected>();
+                            commands.entity(entity).remove::<Selected>();
                         } else {
-                            // commands.entity(entity).insert(Selected);
+                            commands.entity(entity).insert(Selected);
                         }
                     };
                 });

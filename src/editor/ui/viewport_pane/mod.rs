@@ -47,7 +47,12 @@ impl ViewportPane {
 }
 
 impl EditorPane for ViewportPane {
-    fn ui(&mut self, ui: &mut bevy_egui::egui::Ui, world: &mut World) -> egui_tiles::UiResponse {
+    fn ui(
+        &mut self,
+        ui: &mut bevy_egui::egui::Ui,
+        world: &mut World,
+        _commands: &mut Commands,
+    ) -> egui_tiles::UiResponse {
         self.size = ui.available_size();
 
         egui::CentralPanel::default()
