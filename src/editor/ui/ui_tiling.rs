@@ -7,7 +7,7 @@ use bevy_egui::{
     egui::{self, CentralPanel, Frame, Ui},
     EguiContext, EguiContextPass,
 };
-use egui_tiles::{Behavior, SimplificationOptions, TileId, Tiles, Tree};
+use egui_tiles::{Behavior, Container, SimplificationOptions, Tile, TileId, Tiles, Tree};
 
 use super::{editor_pane::EditorPane, outliner_pane::OutlinerPane, viewport_pane::ViewportPane};
 
@@ -21,10 +21,21 @@ pub enum TilingPane {
 pub struct TileTree(pub Tree<TilingPane>);
 
 impl TileTree {
-    pub fn register_pane(&mut self, pane: TilingPane) {
+    pub fn register_pane(&mut self, pane: TilingPane) -> TileId {
         let child = self.0.tiles.insert_pane(pane);
         let root = self.0.root.unwrap();
         self.0.move_tile_to_container(child, root, usize::MAX, true);
+        child
+    }
+
+    pub fn set_share(&mut self, tile_id: TileId, share: f32) {
+        let Some(root) = self.0.root() else {
+            return;
+        };
+        let Some(Tile::Container(Container::Linear(linear))) = self.0.tiles.get_mut(root) else {
+            return;
+        };
+        linear.shares.set_share(tile_id, share);
     }
 }
 

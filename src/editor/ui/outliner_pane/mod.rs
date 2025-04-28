@@ -44,7 +44,8 @@ impl EditorPane for OutlinerPane {
 }
 
 fn register_pane(mut tree: ResMut<TileTree>) {
-    tree.register_pane(TilingPane::Outliner(OutlinerPane));
+    let tile_id = tree.register_pane(TilingPane::Outliner(OutlinerPane));
+    tree.set_share(tile_id, 0.2);
 }
 
 fn outliner_ui(
