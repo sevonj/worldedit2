@@ -10,6 +10,10 @@ updates:
     schedule:
       interval: "weekly"
     groups:
+      bevy:
+        patterns:
+          - "bevy"
+          - "bevy_egui"
       egui:
         patterns:
           - "bevy_egui"
