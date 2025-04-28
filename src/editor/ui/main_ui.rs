@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_egui::{
     egui::{self, SidePanel, Ui},
-    EguiContexts,
+    EguiContextPass, EguiContexts,
 };
 use egui_extras::{Column, TableBuilder};
 
@@ -12,7 +12,7 @@ pub struct MainUi;
 
 impl Plugin for MainUi {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, draw_ui);
+        app.add_systems(EguiContextPass, draw_ui);
     }
 }
 

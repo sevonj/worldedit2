@@ -3,7 +3,7 @@ mod rt;
 use bevy::prelude::*;
 use bevy_egui::{
     egui::{CentralPanel, Frame, Window},
-    EguiContexts,
+    EguiContextPass, EguiContexts,
 };
 
 use crate::editor::{selection::Selected, selection_ops::transform_ops::TransformOp};
@@ -17,7 +17,7 @@ impl Plugin for ViewportGui {
     fn build(&self, app: &mut App) {
         rt::build(app);
         app.add_systems(
-            Update,
+            EguiContextPass,
             (
                 draw_viewport_ui,
                 camera_controls_ui,

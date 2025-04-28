@@ -3,7 +3,7 @@
 use bevy::{
     prelude::*,
     render::{
-        camera::RenderTarget,
+        camera::{ImageRenderTarget, RenderTarget},
         render_resource::{
             Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
         },
@@ -61,8 +61,10 @@ pub fn refresh_camera_rt_img(
     mut q_camera: Query<&mut Camera, With<CurrentCamera>>,
     viewport_img: Res<ViewportRT>,
 ) {
-    let mut camera = q_camera.single_mut();
-    camera.target = RenderTarget::Image(viewport_img.0.clone());
+    let Ok(mut camera) = q_camera.single_mut() else {
+        return;
+    };
+    camera.target = RenderTarget::Image(ImageRenderTarget::from(viewport_img.0.clone()));
 }
 
 /// Build UI
