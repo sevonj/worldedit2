@@ -14,7 +14,4 @@ updates:
         patterns:
           - "bevy"
           - "bevy_egui"
-      egui:
-        patterns:
-          - "bevy_egui"
           - "egui_extras"
