@@ -59,13 +59,17 @@ fn update_camera(
     mut query: Query<(&mut CameraRigOrbitalData, &mut Transform), With<Camera3d>>,
     op: Res<SelectionOpsState>,
 ) {
-    let (mut data, mut xform) = query.single_mut();
+    let Ok((mut data, mut xform)) = query.single_mut() else {
+        return;
+    };
     if *op != SelectionOpsState::None {
         refresh_camera_xform(&mut data, &mut xform);
         return;
     }
 
-    let mut window = q_windows.single_mut();
+    let Ok(mut window) = q_windows.single_mut() else {
+        return;
+    };
 
     if mouse_b.pressed(MouseButton::Middle) {
         window.cursor_options.grab_mode = CursorGrabMode::Locked;
@@ -109,7 +113,9 @@ fn update_camera(
 }
 
 fn ready(mut query: Query<(&mut CameraRigOrbitalData, &mut Transform), With<Camera3d>>) {
-    let (mut data, mut xform) = query.single_mut();
+    let Ok((mut data, mut xform)) = query.single_mut() else {
+        return;
+    };
     refresh_camera_xform(&mut data, &mut xform);
 }
 

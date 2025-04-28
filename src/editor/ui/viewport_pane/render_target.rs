@@ -3,7 +3,7 @@
 use bevy::{
     prelude::*,
     render::{
-        camera::RenderTarget,
+        camera::{ImageRenderTarget, RenderTarget},
         render_resource::{
             Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
         },
@@ -14,7 +14,10 @@ use egui_tiles::Tile;
 
 use crate::editor::{
     camera_rig_orbital::CurrentCamera,
-    ui::{ui_tiling::{TileTree, TilingPane}, viewport_pane::ViewportPane},
+    ui::{
+        ui_tiling::{TileTree, TilingPane},
+        viewport_pane::ViewportPane,
+    },
 };
 
 #[derive(Deref, Resource)]
@@ -60,9 +63,11 @@ pub fn refresh_camera_target(
     mut q_camera: Query<&mut Camera, With<CurrentCamera>>,
     viewport_img: Res<ViewportRT>,
 ) {
-    let mut camera = q_camera.single_mut();
+    let Ok(mut camera) = q_camera.single_mut() else {
+        return;
+    };
     camera.viewport = None;
-    camera.target = RenderTarget::Image(viewport_img.0.clone());
+    camera.target = RenderTarget::Image(ImageRenderTarget::from(viewport_img.0.clone()));
 }
 
 pub fn update_viewport_img_size(

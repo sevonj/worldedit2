@@ -96,7 +96,9 @@ fn op_switcher(
         return;
     }
 
-    let window = q_windows.single();
+    let Ok(window) = q_windows.single() else {
+        return;
+    };
 
     if kb.just_pressed(KeyCode::Escape) {
         if *op != TransformOp::None {
@@ -147,7 +149,9 @@ fn op_runner(
     q_windows: Query<&Window, With<PrimaryWindow>>,
     mut gizmos: Gizmos,
 ) {
-    let (camera, camera_xform, camera_global) = q_camera.single();
+    let Ok((camera, camera_xform, camera_global)) = q_camera.single() else {
+        return;
+    };
 
     match op.as_ref() {
         TransformOp::None => return,
@@ -163,7 +167,9 @@ fn op_runner(
         TransformOp::Scale(..) => todo!(),
     }
 
-    let window = q_windows.single();
+    let Ok(window) = q_windows.single() else {
+        return;
+    };
 
     match op.as_ref() {
         TransformOp::None => unreachable!(),
