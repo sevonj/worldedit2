@@ -1,14 +1,21 @@
 mod editor;
 mod spline;
 
-use bevy::{math::vec3, prelude::*};
+use bevy::{math::vec3, prelude::*, window::WindowResolution};
 
 use editor::{EditorPlugin, Selectable};
 use spline::{Spline, SplinePlugin};
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "WorldEdit II".into(),
+                resolution: WindowResolution::new(1600., 900.),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }))
         .add_plugins(HelloPlugin)
         .add_plugins(EditorPlugin)
         .add_plugins(SplinePlugin)
