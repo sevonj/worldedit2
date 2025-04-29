@@ -10,15 +10,10 @@ use bevy::{
     },
 };
 use bevy_egui::EguiUserTextures;
-use egui_tiles::Tile;
 
-use crate::editor::{
-    camera_rig_orbital::CurrentCamera,
-    ui::{
-        ui_tiling::{TileTree, TilingPane},
-        viewport_pane::ViewportPane,
-    },
-};
+use crate::editor::camera_rig_orbital::CurrentCamera;
+
+use super::ViewportRect;
 
 #[derive(Deref, Resource)]
 pub struct ViewportRT(pub Handle<Image>);
@@ -73,21 +68,15 @@ pub fn refresh_camera_target(
 pub fn update_viewport_img_size(
     mut images: ResMut<Assets<Image>>,
     viewport_img: Res<ViewportRT>,
-    tree: Res<TileTree>,
+    vp_rect: Res<ViewportRect>,
 ) {
-    // TODO: yeah this is dumb
-    fn find_the_pane<'a>(tree: &'a Res<'a, TileTree>) -> Option<&'a ViewportPane> {
-        for tile in tree.0.tiles.tiles() {
-            if let Tile::Pane(TilingPane::ViewPort(pane)) = tile {
-                return Some(pane);
-            }
-        }
-        None
-    }
-
     let img = images.get_mut(&viewport_img.0).expect("no viewport image");
-    let viewport_pane = find_the_pane(&tree).unwrap();
-    let size = viewport_pane.size();
+    let size = vp_rect.size();
+
+    // Zero-size image panics and is useless anyway.
+    if size.x < 1.0 || size.y < 1.0 {
+        return;
+    }
 
     if img.width() != size.x as u32 || img.height() != size.y as u32 {
         img.resize(Extent3d {

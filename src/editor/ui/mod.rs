@@ -8,6 +8,7 @@ use bevy_egui::EguiPlugin;
 use outliner_pane::OutlinerPanePlugin;
 use ui_tiling::UiTilingPlugin;
 use viewport_pane::ViewportPanePlugin;
+pub use viewport_pane::ViewportRect;
 
 #[derive(Debug)]
 pub struct EditorGuiPlugin;

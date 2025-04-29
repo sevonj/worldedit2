@@ -26,23 +26,55 @@ impl Plugin for ViewportPanePlugin {
     }
 }
 
+/// Store area occupied by viewport
+#[derive(Debug, Resource, Clone, Copy)]
+pub struct ViewportRect {
+    pub min_x: f32,
+    pub min_y: f32,
+    pub max_x: f32,
+    pub max_y: f32,
+}
+
+impl Default for ViewportRect {
+    fn default() -> Self {
+        // Non-zero placeholder size
+        Self {
+            min_x: 16.,
+            min_y: 16.,
+            max_x: 16.,
+            max_y: 16.,
+        }
+    }
+}
+
+impl From<egui::Rect> for ViewportRect {
+    fn from(rect: egui::Rect) -> Self {
+        Self {
+            min_x: rect.min.x,
+            min_y: rect.min.y,
+            max_x: rect.max.x,
+            max_y: rect.max.y,
+        }
+    }
+}
+
+impl ViewportRect {
+    pub const fn size(&self) -> egui::Vec2 {
+        egui::Vec2 {
+            x: self.max_x - self.min_x,
+            y: self.max_y - self.min_y,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct ViewportPane {
     viewport_tex_id: egui::TextureId,
-    /// Available UI size from last update
-    size: egui::Vec2,
 }
 
 impl ViewportPane {
     pub fn new(viewport_tex_id: egui::TextureId) -> Self {
-        Self {
-            viewport_tex_id,
-            size: egui::vec2(16., 16.),
-        }
-    }
-
-    pub const fn size(&self) -> egui::Vec2 {
-        self.size
+        Self { viewport_tex_id }
     }
 }
 
@@ -53,8 +85,6 @@ impl EditorPane for ViewportPane {
         world: &mut World,
         _commands: &mut Commands,
     ) -> egui_tiles::UiResponse {
-        self.size = ui.available_size();
-
         egui::CentralPanel::default()
             .frame(Frame::NONE)
             .show_inside(ui, |ui| {
@@ -64,13 +94,18 @@ impl EditorPane for ViewportPane {
                     });
                 });
 
+                let rect = ui.available_rect_before_wrap();
+
                 let image = egui::Image::new(egui::load::SizedTexture::new(
                     self.viewport_tex_id,
-                    self.size,
+                    rect.size(),
                 ));
-                image.paint_at(ui, ui.available_rect_before_wrap());
+                image.paint_at(ui, rect);
 
                 camera_controls_ui(ui, world);
+
+                let mut rect_res = world.resource_mut::<ViewportRect>();
+                *rect_res = ViewportRect::from(rect);
             });
 
         egui_tiles::UiResponse::None
@@ -85,10 +120,13 @@ fn register_pane(
     mut tree: ResMut<TileTree>,
     contexts: EguiContexts,
     viewport_img: Res<ViewportRT>,
+    mut commands: Commands,
 ) {
     let viewport_tex_id = contexts.image_id(&viewport_img).unwrap();
     let pane = TilingPane::ViewPort(ViewportPane::new(viewport_tex_id));
     tree.register_pane(pane);
+
+    commands.insert_resource(ViewportRect::default());
 }
 
 fn camera_controls_ui(ui: &mut egui::Ui, _world: &mut World) {
