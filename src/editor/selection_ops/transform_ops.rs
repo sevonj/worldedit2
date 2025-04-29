@@ -7,7 +7,7 @@ use bevy::{
 };
 use derive_more::Display;
 
-use crate::editor::Colors;
+use crate::editor::{ui::ViewportRect, utility::cursor_position_in_viewport, Colors};
 
 use crate::editor::{camera_rig_orbital::CurrentCamera, selection::WithSelected, Selectable};
 
@@ -148,6 +148,7 @@ fn op_runner(
     q_camera: Query<QCamXform, WithCurrentCam>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
     mut gizmos: Gizmos,
+    vp_rect: Res<ViewportRect>,
 ) {
     let Ok((camera, camera_xform, camera_global)) = q_camera.single() else {
         return;
@@ -171,6 +172,10 @@ fn op_runner(
         return;
     };
 
+    let Some(cursor_pos) = cursor_position_in_viewport(&vp_rect, window) else {
+        return;
+    };
+
     match op.as_ref() {
         TransformOp::None => unreachable!(),
         TransformOp::Move {
@@ -181,8 +186,8 @@ fn op_runner(
             camera,
             camera_xform,
             camera_global,
-            window,
             original_pos,
+            cursor_pos,
             axis_lock,
             gizmos,
         ),
@@ -195,8 +200,8 @@ fn op_runner(
             camera,
             camera_xform,
             camera_global,
-            window,
             center_pos,
+            cursor_pos,
             *original_cursor_pos,
             axis_lock,
             gizmos,
@@ -339,8 +344,8 @@ fn op_move(
     camera: &Camera,
     camera_xform: &Transform,
     camera_global: &GlobalTransform,
-    window: &Window,
     original_pos: &Vec3,
+    cursor_pos: Vec2,
     axis_lock: &AxisLock,
     mut gizmos: Gizmos,
 ) {
@@ -357,16 +362,8 @@ fn op_move(
         AxisLock::PlaneZ => Dir3::Z.as_vec3(),
     };
     let plane = InfinitePlane3d::new(axis);
-    let Some(viewport_position) = window.cursor_position() else {
-        return;
-    };
-    let Some(pos) = plane_line_intersect(
-        viewport_position,
-        camera,
-        camera_global,
-        &plane,
-        original_pos,
-    ) else {
+    let Some(pos) = plane_line_intersect(cursor_pos, camera, camera_global, &plane, original_pos)
+    else {
         return;
     };
 
@@ -390,8 +387,8 @@ fn op_rotate(
     camera: &Camera,
     camera_xform: &Transform,
     camera_global: &GlobalTransform,
-    window: &Window,
     op_origin: &Vec3,
+    cursor_pos: Vec2,
     original_cursor_pos: Vec2,
     axis_lock: &AxisLock,
     mut gizmos: Gizmos,
@@ -407,13 +404,9 @@ fn op_rotate(
         AxisLock::Z | AxisLock::PlaneZ => Dir3::Z.as_vec3(),
     };
 
-    let Some(cursor_position) = window.cursor_position() else {
-        println!("bailed: no cursor pos");
-        return;
-    };
     let plane = InfinitePlane3d::new(axis);
     let Some(new_world_pos) =
-        plane_line_intersect(cursor_position, camera, camera_global, &plane, op_origin)
+        plane_line_intersect(cursor_pos, camera, camera_global, &plane, op_origin)
     else {
         return;
     };

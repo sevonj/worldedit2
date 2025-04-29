@@ -4,6 +4,7 @@ mod gizmos;
 mod selection;
 mod selection_ops;
 pub mod ui;
+pub mod utility;
 
 use bevy::app::Plugin;
 pub use camera_rig_orbital::CameraRigOrbital;

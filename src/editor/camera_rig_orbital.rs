@@ -4,7 +4,9 @@ use bevy::{
     window::{CursorGrabMode, PrimaryWindow},
 };
 
-use super::selection_ops::SelectionOpsState;
+use super::{
+    selection_ops::SelectionOpsState, ui::ViewportRect, utility::is_cursor_within_viewport,
+};
 
 #[derive(Component)]
 pub struct CurrentCamera;
@@ -50,6 +52,7 @@ fn setup(mut commands: Commands) {
     ));
 }
 
+#[allow(clippy::too_many_arguments)]
 fn update_camera(
     mouse_b: Res<ButtonInput<MouseButton>>,
     mut evr_mouse: EventReader<MouseMotion>,
@@ -58,6 +61,7 @@ fn update_camera(
     mut q_windows: Query<&mut Window, With<PrimaryWindow>>,
     mut query: Query<(&mut CameraRigOrbitalData, &mut Transform), With<Camera3d>>,
     op: Res<SelectionOpsState>,
+    vp_rect: Res<ViewportRect>,
 ) {
     let Ok((mut data, mut xform)) = query.single_mut() else {
         return;
@@ -68,6 +72,10 @@ fn update_camera(
     }
 
     let Ok(mut window) = q_windows.single_mut() else {
+        return;
+    };
+
+    if !is_cursor_within_viewport(&vp_rect, &window) {
         return;
     };
 
