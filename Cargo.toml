@@ -5,10 +5,10 @@ edition = "2021"
 
 [dependencies]
 bevy = { version = "0.16.1", features = ["dynamic_linking"] }
-bevy_egui = "0.34.1"
+bevy_egui = "0.35.1"
 derive_more = { version = "2.0.1", features = ["display"] }
-egui_extras = "0.31.1"
-egui_tiles = "0.12.0"
+egui_extras = "0.32.0"
+egui_tiles = "0.13.0"
 procedural_modelling = { version = "0.3.0", features = ["bevy"] }
 rand_chacha = "0.9.0"
 
