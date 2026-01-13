@@ -1,7 +1,7 @@
 use bevy::{
     input::mouse::{MouseMotion, MouseScrollUnit, MouseWheel},
     prelude::*,
-    window::{CursorGrabMode, PrimaryWindow},
+    window::{CursorGrabMode, CursorOptions, PrimaryWindow},
 };
 
 use super::{
@@ -55,10 +55,11 @@ fn setup(mut commands: Commands) {
 #[allow(clippy::too_many_arguments)]
 fn update_camera(
     mouse_b: Res<ButtonInput<MouseButton>>,
-    mut evr_mouse: EventReader<MouseMotion>,
-    mut evr_scroll: EventReader<MouseWheel>,
+    mut evr_mouse: MessageReader<MouseMotion>,
+    mut evr_scroll: MessageReader<MouseWheel>,
     keyb: Res<ButtonInput<KeyCode>>,
     mut q_windows: Query<&mut Window, With<PrimaryWindow>>,
+    mut cursor_options: Single<&mut CursorOptions, With<Window>>,
     mut query: Query<(&mut CameraRigOrbitalData, &mut Transform), With<Camera3d>>,
     op: Res<SelectionOpsState>,
     vp_rect: Res<ViewportRect>,
@@ -71,7 +72,7 @@ fn update_camera(
         return;
     }
 
-    let Ok(mut window) = q_windows.single_mut() else {
+    let Ok(window) = q_windows.single_mut() else {
         return;
     };
 
@@ -80,7 +81,7 @@ fn update_camera(
     };
 
     if mouse_b.pressed(MouseButton::Middle) {
-        window.cursor_options.grab_mode = CursorGrabMode::Locked;
+        cursor_options.grab_mode = CursorGrabMode::Locked;
         let mut input_vec = Vec2::ZERO;
 
         for ev in evr_mouse.read() {
@@ -102,7 +103,7 @@ fn update_camera(
 
         refresh_camera_xform(&mut data, &mut xform);
     } else {
-        window.cursor_options.grab_mode = CursorGrabMode::None;
+        cursor_options.grab_mode = CursorGrabMode::None;
 
         for ev in evr_scroll.read() {
             let mut mult = match ev.unit {

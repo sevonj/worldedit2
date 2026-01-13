@@ -1,15 +1,13 @@
 //! Viewport Render Target Texture
 
 use bevy::{
+    camera::{ImageRenderTarget, RenderTarget},
     prelude::*,
-    render::{
-        camera::{ImageRenderTarget, RenderTarget},
-        render_resource::{
-            Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
-        },
+    render::render_resource::{
+        Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
     },
 };
-use bevy_egui::EguiUserTextures;
+use bevy_egui::{EguiTextureHandle, EguiUserTextures};
 
 use crate::editor::camera_rig_orbital::CurrentCamera;
 
@@ -49,7 +47,8 @@ pub fn create_viewport_img(
     image.resize(size);
 
     let image_handle = images.add(image);
-    egui_user_textures.add_image(image_handle.clone());
+    let strong = EguiTextureHandle::Strong(image_handle.clone());
+    egui_user_textures.add_image(strong);
     commands.insert_resource(ViewportRT(image_handle.clone()));
 }
 

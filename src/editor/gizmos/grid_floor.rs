@@ -1,9 +1,7 @@
-use bevy::{
-    asset::RenderAssetUsages,
-    math::{vec3a, Vec3A},
-    prelude::*,
-    render::mesh::PrimitiveTopology,
-};
+use bevy::asset::RenderAssetUsages;
+use bevy::math::{Vec3A, vec3a};
+use bevy::mesh::PrimitiveTopology;
+use bevy::prelude::*;
 
 use crate::editor::Colors;
 

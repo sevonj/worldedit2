@@ -2,7 +2,7 @@ use bevy::{ecs::query::QueryIter, prelude::*};
 use bevy_egui::egui::{self, Ui};
 use egui_extras::{Column, TableBuilder};
 
-use crate::editor::{selection::Selected, Selectable};
+use crate::editor::{Selectable, selection::Selected};
 
 use super::{
     editor_pane::EditorPane,
@@ -63,7 +63,7 @@ fn outliner_ui(
 
             body.row(16.0, |mut row| {
                 row.col(|ui| {
-                    let button = egui::SelectableLabel::new(is_selected, text);
+                    let button = egui::Button::selectable(is_selected, text);
                     if ui.add(button).clicked() {
                         if is_selected {
                             commands.entity(entity).remove::<Selected>();

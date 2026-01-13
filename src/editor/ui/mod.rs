@@ -15,9 +15,7 @@ pub struct EditorGuiPlugin;
 
 impl Plugin for EditorGuiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(EguiPlugin {
-            enable_multipass_for_primary_context: true,
-        });
+        app.add_plugins(EguiPlugin::default());
         app.add_plugins(UiTilingPlugin);
 
         app.add_plugins(ViewportPanePlugin);

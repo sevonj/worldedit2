@@ -4,8 +4,8 @@
 
 use bevy::{ecs::world::CommandQueue, prelude::*};
 use bevy_egui::{
+    EguiContext, EguiPrimaryContextPass,
     egui::{self, CentralPanel, Frame, Ui},
-    EguiContext, EguiContextPass,
 };
 use egui_tiles::{Behavior, Container, SimplificationOptions, Tile, TileId, Tiles, Tree};
 
@@ -48,7 +48,7 @@ impl Plugin for UiTilingPlugin {
         let root = tiles.insert_horizontal_tile(vec![]);
 
         app.insert_resource(TileTree(Tree::new("my_tree", root, tiles)));
-        app.add_systems(EguiContextPass, draw_editor_ui);
+        app.add_systems(EguiPrimaryContextPass, draw_editor_ui);
     }
 }
 

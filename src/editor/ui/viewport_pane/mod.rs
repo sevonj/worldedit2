@@ -2,8 +2,8 @@ mod render_target;
 
 use bevy::prelude::*;
 use bevy_egui::{
-    egui::{self, Frame},
     EguiContexts,
+    egui::{self, Frame},
 };
 
 use super::{
@@ -122,7 +122,7 @@ fn register_pane(
     viewport_img: Res<ViewportRT>,
     mut commands: Commands,
 ) {
-    let viewport_tex_id = contexts.image_id(&viewport_img).unwrap();
+    let viewport_tex_id = contexts.image_id(&**viewport_img).unwrap();
     let pane = TilingPane::ViewPort(ViewportPane::new(viewport_tex_id));
     tree.register_pane(pane);
 

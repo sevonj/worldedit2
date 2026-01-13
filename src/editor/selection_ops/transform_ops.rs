@@ -1,15 +1,13 @@
 //! Transform operations for selection - Move, rotate, scale
 
-use bevy::{
-    color::palettes::tailwind::{CYAN_100, RED_100},
-    prelude::*,
-    window::PrimaryWindow,
-};
+use bevy::color::palettes::tailwind::*;
+use bevy::prelude::*;
+use bevy::window::PrimaryWindow;
 use derive_more::Display;
 
-use crate::editor::{ui::ViewportRect, utility::cursor_position_in_viewport, Colors};
+use crate::editor::{Colors, ui::ViewportRect, utility::cursor_position_in_viewport};
 
-use crate::editor::{camera_rig_orbital::CurrentCamera, selection::WithSelected, Selectable};
+use crate::editor::{Selectable, camera_rig_orbital::CurrentCamera, selection::WithSelected};
 
 use super::SelectionOpsState;
 
