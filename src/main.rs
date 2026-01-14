@@ -1,24 +1,45 @@
 mod editor;
 mod spline;
 
+use bevy::camera::visibility::RenderLayers;
+use bevy::math::vec3;
 use bevy::prelude::*;
+use bevy::render::RenderPlugin;
+use bevy::render::settings::RenderCreation;
+use bevy::render::settings::WgpuFeatures;
+use bevy::render::settings::WgpuSettings;
 use bevy::window::WindowResolution;
-use bevy::{camera::visibility::RenderLayers, math::vec3};
+use bevy_egui::EguiGlobalSettings;
+use bevy_egui::PrimaryEguiContext;
 
-use bevy_egui::{EguiGlobalSettings, PrimaryEguiContext};
-use editor::{EditorPlugin, Selectable};
-use spline::{Spline, SplinePlugin};
+use editor::Selectable;
+use spline::Spline;
+
+use bevy::pbr::wireframe::WireframePlugin;
+use editor::EditorPlugin;
+use spline::SplinePlugin;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                title: "WorldEdit II".into(),
-                resolution: WindowResolution::new(1600, 900),
-                ..Default::default()
-            }),
-            ..Default::default()
-        }))
+        .add_plugins(
+            DefaultPlugins
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: "WorldEdit II".into(),
+                        resolution: WindowResolution::new(1600, 900),
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                })
+                .set(RenderPlugin {
+                    render_creation: RenderCreation::Automatic(WgpuSettings {
+                        features: WgpuFeatures::POLYGON_MODE_LINE,
+                        ..default()
+                    }),
+                    ..default()
+                }),
+        )
+        .add_plugins(WireframePlugin::default())
         .add_plugins(HelloPlugin)
         .add_plugins(EditorPlugin)
         .add_plugins(SplinePlugin)

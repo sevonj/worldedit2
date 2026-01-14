@@ -6,9 +6,11 @@ edition = "2024"
 [dependencies]
 bevy = { version = "0.17.3", features = ["dynamic_linking"] }
 bevy_egui = "0.38.1"
+bytemuck = "1.24.0"
 derive_more = { version = "2.1.1", features = ["display"] }
 egui_extras = "0.33.3"
 egui_tiles = "0.14.1"
+image = "0.25.9"
 procedural_modelling = { version = "0.4.1", features = ["bevy"] }
 rand_chacha = "0.9.0"
 
