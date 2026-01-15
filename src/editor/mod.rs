@@ -30,5 +30,7 @@ impl Plugin for EditorPlugin {
         app.add_plugins(SelectionActionsPlugin);
         app.add_plugins(GridFloorPlugin);
         app.add_plugins(TerrainCellPreviewPlugin);
+
+        app.add_plugins(resources::ViewportRenderTargetPlugin);
     }
 }

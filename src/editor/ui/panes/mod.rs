@@ -1,10 +1,8 @@
 mod outliner;
 mod viewport3d;
 
-pub use outliner::OutlinerPane;
-pub use outliner::OutlinerPanePlugin;
-pub use viewport3d::ViewportPane;
-pub use viewport3d::ViewportPanePlugin;
+pub use outliner::{OutlinerPane, OutlinerPanePlugin};
+pub use viewport3d::{ViewportPane, ViewportPanePlugin};
 
 use bevy::prelude::*;
 

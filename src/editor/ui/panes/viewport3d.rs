@@ -1,15 +1,13 @@
-mod render_target;
-
 use bevy::prelude::*;
 
 use bevy_egui::EguiContexts;
+use bevy_egui::EguiUserTextures;
 use bevy_egui::egui;
 use bevy_egui::egui::Frame;
 
-pub use render_target::ViewportRT;
-
 use super::EditorPane;
 use crate::editor::resources::ViewportRect;
+use crate::editor::resources::ViewportRenderTarget;
 use crate::editor::selection::WithSelected;
 use crate::editor::selection_actions::transform_action::TransformAction;
 use crate::editor::ui::ui_tiling::TileTree;
@@ -20,10 +18,8 @@ pub struct ViewportPanePlugin;
 
 impl Plugin for ViewportPanePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PreStartup, render_target::create_viewport_img);
+        app.add_systems(PreStartup, create_viewport_img);
         app.add_systems(Startup, register_pane);
-        app.add_systems(PreUpdate, render_target::refresh_camera_target);
-        app.add_systems(PostUpdate, render_target::update_viewport_img_size);
     }
 }
 
@@ -76,10 +72,18 @@ impl EditorPane for ViewportPane {
     }
 }
 
+pub fn create_viewport_img(
+    egui_user_textures: ResMut<EguiUserTextures>,
+    mut commands: Commands,
+    images: ResMut<Assets<Image>>,
+) {
+    commands.insert_resource(ViewportRenderTarget::new(egui_user_textures, images));
+}
+
 fn register_pane(
     mut tree: ResMut<TileTree>,
     contexts: EguiContexts,
-    viewport_img: Res<ViewportRT>,
+    viewport_img: Res<ViewportRenderTarget>,
     mut commands: Commands,
 ) {
     let viewport_tex_id = contexts.image_id(&**viewport_img).unwrap();
