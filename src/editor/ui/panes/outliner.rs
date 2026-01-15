@@ -41,8 +41,8 @@ impl EditorPane for OutlinerPane {
         egui_tiles::UiResponse::None
     }
 
-    fn title(&self) -> String {
-        "Outliner".into()
+    fn tab_title(&self) -> &'static str {
+        "Outliner"
     }
 }
 

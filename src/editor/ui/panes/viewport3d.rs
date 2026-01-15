@@ -71,8 +71,8 @@ impl EditorPane for ViewportPane {
         egui_tiles::UiResponse::None
     }
 
-    fn title(&self) -> String {
-        "Scene".into()
+    fn tab_title(&self) -> &'static str {
+        "Scene"
     }
 }
 

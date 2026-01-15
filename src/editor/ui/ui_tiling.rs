@@ -14,6 +14,7 @@ use bevy_egui::egui::Ui;
 use egui_tiles::{Behavior, Container, SimplificationOptions, Tile, TileId, Tiles, Tree};
 
 use super::panes::EditorPane;
+
 use super::panes::OutlinerPane;
 use super::panes::ViewportPane;
 
@@ -66,8 +67,8 @@ struct TreeBehavior<'a> {
 impl Behavior<TilingPane> for TreeBehavior<'_> {
     fn tab_title_for_pane(&mut self, pane: &TilingPane) -> egui::WidgetText {
         match pane {
-            TilingPane::ViewPort(pane) => pane.title().into(),
-            TilingPane::Outliner(pane) => pane.title().into(),
+            TilingPane::ViewPort(pane) => pane.tab_title().into(),
+            TilingPane::Outliner(pane) => pane.tab_title().into(),
         }
     }
 
