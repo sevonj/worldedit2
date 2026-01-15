@@ -2,14 +2,20 @@
 //!
 //!
 
-use bevy::{ecs::world::CommandQueue, prelude::*};
-use bevy_egui::{
-    EguiContext, EguiPrimaryContextPass,
-    egui::{self, CentralPanel, Frame, Ui},
-};
+use bevy::prelude::*;
+
+use bevy::ecs::world::CommandQueue;
+use bevy_egui::EguiContext;
+use bevy_egui::EguiPrimaryContextPass;
+use bevy_egui::egui;
+use bevy_egui::egui::CentralPanel;
+use bevy_egui::egui::Frame;
+use bevy_egui::egui::Ui;
 use egui_tiles::{Behavior, Container, SimplificationOptions, Tile, TileId, Tiles, Tree};
 
-use super::{editor_pane::EditorPane, outliner_pane::OutlinerPane, viewport_pane::ViewportPane};
+use super::panes::EditorPane;
+use super::panes::OutlinerPane;
+use super::panes::ViewportPane;
 
 #[derive(Debug, Resource)]
 pub enum TilingPane {

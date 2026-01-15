@@ -1,3 +1,11 @@
+mod outliner;
+mod viewport3d;
+
+pub use outliner::OutlinerPane;
+pub use outliner::OutlinerPanePlugin;
+pub use viewport3d::ViewportPane;
+pub use viewport3d::ViewportPanePlugin;
+
 use bevy::prelude::*;
 use bevy_egui::egui::Ui;
 use egui_tiles::UiResponse;

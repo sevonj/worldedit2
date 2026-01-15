@@ -1,14 +1,9 @@
-mod editor_pane;
-mod outliner_pane;
+mod panes;
 mod ui_tiling;
-mod viewport_pane;
 
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
-use outliner_pane::OutlinerPanePlugin;
 use ui_tiling::UiTilingPlugin;
-use viewport_pane::ViewportPanePlugin;
-pub use viewport_pane::ViewportRect;
 
 #[derive(Debug)]
 pub struct EditorGuiPlugin;
@@ -18,7 +13,7 @@ impl Plugin for EditorGuiPlugin {
         app.add_plugins(EguiPlugin::default());
         app.add_plugins(UiTilingPlugin);
 
-        app.add_plugins(ViewportPanePlugin);
-        app.add_plugins(OutlinerPanePlugin);
+        app.add_plugins(panes::ViewportPanePlugin);
+        app.add_plugins(panes::OutlinerPanePlugin);
     }
 }

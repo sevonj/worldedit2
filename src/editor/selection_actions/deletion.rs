@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::editor::selection::WithSelected;
 
-use super::SelectionOpsState;
+use super::SelectionActionState;
 
 pub struct DeletionPlugin;
 
@@ -15,10 +15,10 @@ impl Plugin for DeletionPlugin {
 fn update(
     mut commands: Commands,
     selection: Query<Entity, WithSelected>,
-    selection_state: ResMut<SelectionOpsState>,
+    selection_state: ResMut<SelectionActionState>,
     kb: Res<ButtonInput<KeyCode>>,
 ) {
-    if *selection_state != SelectionOpsState::None {
+    if *selection_state != SelectionActionState::None {
         return;
     }
 

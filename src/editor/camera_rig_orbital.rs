@@ -1,12 +1,15 @@
-use bevy::{
-    input::mouse::{MouseMotion, MouseScrollUnit, MouseWheel},
-    prelude::*,
-    window::{CursorGrabMode, CursorOptions, PrimaryWindow},
-};
+use bevy::prelude::*;
 
-use super::{
-    selection_ops::SelectionOpsState, ui::ViewportRect, utility::is_cursor_within_viewport,
-};
+use bevy::input::mouse::MouseMotion;
+use bevy::input::mouse::MouseScrollUnit;
+use bevy::input::mouse::MouseWheel;
+use bevy::window::CursorGrabMode;
+use bevy::window::CursorOptions;
+use bevy::window::PrimaryWindow;
+
+use super::selection_actions::SelectionActionState;
+use super::utility::is_cursor_within_viewport;
+use crate::editor::resources::ViewportRect;
 
 #[derive(Component)]
 pub struct CurrentCamera;
@@ -61,13 +64,13 @@ fn update_camera(
     mut q_windows: Query<&mut Window, With<PrimaryWindow>>,
     mut cursor_options: Single<&mut CursorOptions, With<Window>>,
     mut query: Query<(&mut CameraRigOrbitalData, &mut Transform), With<Camera3d>>,
-    op: Res<SelectionOpsState>,
+    op: Res<SelectionActionState>,
     vp_rect: Res<ViewportRect>,
 ) {
     let Ok((mut data, mut xform)) = query.single_mut() else {
         return;
     };
-    if *op != SelectionOpsState::None {
+    if *op != SelectionActionState::None {
         refresh_camera_xform(&mut data, &mut xform);
         return;
     }

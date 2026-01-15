@@ -1,8 +1,9 @@
 mod camera_rig_orbital;
 mod colors;
 mod gizmos;
+mod resources;
 mod selection;
-mod selection_ops;
+mod selection_actions;
 mod terrain_cell_preview;
 mod ui;
 mod utility;
@@ -13,7 +14,7 @@ use camera_rig_orbital::CameraRigOrbital;
 use colors::Colors;
 use gizmos::GridFloorPlugin;
 use selection::SelectionPlugin;
-use selection_ops::SelectionOpsPlugin;
+use selection_actions::SelectionActionsPlugin;
 use terrain_cell_preview::TerrainCellPreviewPlugin;
 use ui::EditorGuiPlugin;
 
@@ -26,7 +27,7 @@ impl Plugin for EditorPlugin {
         app.add_plugins(EditorGuiPlugin);
         app.add_plugins(CameraRigOrbital);
         app.add_plugins(SelectionPlugin);
-        app.add_plugins(SelectionOpsPlugin);
+        app.add_plugins(SelectionActionsPlugin);
         app.add_plugins(GridFloorPlugin);
         app.add_plugins(TerrainCellPreviewPlugin);
     }

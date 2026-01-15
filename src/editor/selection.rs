@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::selection_ops::SelectionOpsState;
+use super::selection_actions::SelectionActionState;
 
 /// Marker component for selectable entities.
 #[derive(Component, Default)]
@@ -25,9 +25,9 @@ fn update_selection(
     mut commands: Commands,
     query: Query<(Entity, Option<&Selected>), With<Selectable>>,
     keyb: Res<ButtonInput<KeyCode>>,
-    op: Res<SelectionOpsState>,
+    op: Res<SelectionActionState>,
 ) {
-    if *op != SelectionOpsState::None {
+    if *op != SelectionActionState::None {
         return;
     }
 

@@ -1,8 +1,6 @@
 use bevy::prelude::*;
 
-use bevy::color::palettes::tailwind::{
-    BLUE_200, BLUE_400, GRAY_500, GRAY_600, GREEN_200, GREEN_400, RED_200, RED_400,
-};
+use bevy::color::palettes::tailwind::*;
 
 pub struct Colors;
 

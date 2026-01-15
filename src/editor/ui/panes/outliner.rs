@@ -1,13 +1,16 @@
-use bevy::{ecs::query::QueryIter, prelude::*};
-use bevy_egui::egui::{self, Ui};
-use egui_extras::{Column, TableBuilder};
+use bevy::prelude::*;
 
-use crate::editor::{Selectable, selection::Selected};
+use bevy::ecs::query::QueryIter;
+use bevy_egui::egui;
+use bevy_egui::egui::Ui;
+use egui_extras::Column;
+use egui_extras::TableBuilder;
 
-use super::{
-    editor_pane::EditorPane,
-    ui_tiling::{TileTree, TilingPane},
-};
+use super::EditorPane;
+use crate::editor::Selectable;
+use crate::editor::selection::Selected;
+use crate::editor::ui::ui_tiling::TileTree;
+use crate::editor::ui::ui_tiling::TilingPane;
 
 #[derive(Debug)]
 pub struct OutlinerPanePlugin;

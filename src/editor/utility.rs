@@ -1,8 +1,6 @@
-//! Misc utility functions module
-
 use bevy::prelude::*;
 
-use super::ui::ViewportRect;
+use crate::editor::resources::ViewportRect;
 
 pub fn is_cursor_within_viewport(vp_rect: &ViewportRect, window: &Window) -> bool {
     let Some(cursor_pos) = window.cursor_position() else {

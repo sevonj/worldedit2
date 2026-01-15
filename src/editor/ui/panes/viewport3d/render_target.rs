@@ -1,18 +1,19 @@
-//! Viewport Render Target Texture
+use bevy::prelude::*;
 
-use bevy::{
-    camera::{ImageRenderTarget, RenderTarget},
-    prelude::*,
-    render::render_resource::{
-        Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
-    },
-};
-use bevy_egui::{EguiTextureHandle, EguiUserTextures};
+use bevy::camera::ImageRenderTarget;
+use bevy::camera::RenderTarget;
+use bevy::render::render_resource::Extent3d;
+use bevy::render::render_resource::TextureDescriptor;
+use bevy::render::render_resource::TextureDimension;
+use bevy::render::render_resource::TextureFormat;
+use bevy::render::render_resource::TextureUsages;
+use bevy_egui::EguiTextureHandle;
+use bevy_egui::EguiUserTextures;
 
 use crate::editor::camera_rig_orbital::CurrentCamera;
+use crate::editor::resources::ViewportRect;
 
-use super::ViewportRect;
-
+/// Viewport Render Target Texture
 #[derive(Deref, Resource)]
 pub struct ViewportRT(pub Handle<Image>);
 

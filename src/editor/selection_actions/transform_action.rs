@@ -1,18 +1,20 @@
-//! Transform operations for selection - Move, rotate, scale
+use bevy::prelude::*;
 
 use bevy::color::palettes::tailwind::*;
-use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use derive_more::Display;
 
-use crate::editor::{Colors, ui::ViewportRect, utility::cursor_position_in_viewport};
+use super::SelectionActionState;
+use crate::editor::Colors;
+use crate::editor::Selectable;
+use crate::editor::camera_rig_orbital::CurrentCamera;
+use crate::editor::resources::ViewportRect;
+use crate::editor::selection::WithSelected;
+use crate::editor::utility::cursor_position_in_viewport;
 
-use crate::editor::{Selectable, camera_rig_orbital::CurrentCamera, selection::WithSelected};
-
-use super::SelectionOpsState;
-
+/// Transform operations for selected entities - Move, rotate, scale
 #[derive(Resource, Debug, Default, PartialEq, Clone, Copy)]
-pub enum TransformOp {
+pub enum TransformAction {
     #[default]
     None,
     Move {
@@ -28,13 +30,13 @@ pub enum TransformOp {
     Scale(AxisLock),
 }
 
-impl std::fmt::Display for TransformOp {
+impl std::fmt::Display for TransformAction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            TransformOp::None => write!(f, "No operation"),
-            TransformOp::Move { .. } => write!(f, "Move"),
-            TransformOp::Rotate { .. } => write!(f, "Rotate"),
-            TransformOp::Scale(..) => write!(f, "Scale"),
+            TransformAction::None => write!(f, "No operation"),
+            TransformAction::Move { .. } => write!(f, "Move"),
+            TransformAction::Rotate { .. } => write!(f, "Rotate"),
+            TransformAction::Scale(..) => write!(f, "Scale"),
         }
     }
 }
@@ -65,27 +67,27 @@ type QCamXform<'a> = (&'a Camera, &'a Transform, &'a GlobalTransform);
 
 type WithCurrentCam = (With<CurrentCamera>, Without<Selectable>);
 
-pub struct TransformOpsPlugin;
+pub struct TransformActionsPlugin;
 
-impl Plugin for TransformOpsPlugin {
+impl Plugin for TransformActionsPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(TransformOp::default());
+        app.insert_resource(TransformAction::default());
         app.add_systems(Update, (op_switcher, op_runner).chain());
     }
 }
 
 fn op_switcher(
     mut commands: Commands,
-    mut op: ResMut<TransformOp>,
+    mut op: ResMut<TransformAction>,
     mut selection: Query<QXformOpPossible, WithSelected>,
-    mut selection_state: ResMut<SelectionOpsState>,
+    mut selection_state: ResMut<SelectionActionState>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
     kb: Res<ButtonInput<KeyCode>>,
     mb: Res<ButtonInput<MouseButton>>,
 ) {
     #[allow(unreachable_patterns)] // There will be more
     match *selection_state {
-        SelectionOpsState::None | SelectionOpsState::Transform => (),
+        SelectionActionState::None | SelectionActionState::Transform => (),
         _ => return,
     }
 
@@ -99,7 +101,7 @@ fn op_switcher(
     };
 
     if kb.just_pressed(KeyCode::Escape) {
-        if *op != TransformOp::None {
+        if *op != TransformAction::None {
             cancel_op(&mut commands, &mut selection, &mut selection_state, &mut op);
         }
         return;
@@ -112,11 +114,11 @@ fn op_switcher(
 
     if kb.just_pressed(KeyCode::KeyG) {
         match *op {
-            TransformOp::None => init_op(&mut commands, &selection, &mut selection_state),
-            TransformOp::Move { .. } => return,
+            TransformAction::None => init_op(&mut commands, &selection, &mut selection_state),
+            TransformAction::Move { .. } => return,
             _ => undo_changes(&mut selection),
         }
-        *op = TransformOp::Move {
+        *op = TransformAction::Move {
             axis_lock: AxisLock::default(),
             op_origin: selection_bb_center(&selection),
         };
@@ -126,11 +128,11 @@ fn op_switcher(
         };
 
         match *op {
-            TransformOp::None => init_op(&mut commands, &selection, &mut selection_state),
-            TransformOp::Rotate { .. } => return,
+            TransformAction::None => init_op(&mut commands, &selection, &mut selection_state),
+            TransformAction::Rotate { .. } => return,
             _ => undo_changes(&mut selection),
         }
-        *op = TransformOp::Rotate {
+        *op = TransformAction::Rotate {
             axis_lock: AxisLock::default(),
             op_origin: selection_bb_center(&selection),
             original_cursor_pos,
@@ -141,7 +143,7 @@ fn op_switcher(
 }
 
 fn op_runner(
-    op: ResMut<TransformOp>,
+    op: ResMut<TransformAction>,
     q_selection: Query<QXformOp, WithSelected>,
     q_camera: Query<QCamXform, WithCurrentCam>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
@@ -153,17 +155,17 @@ fn op_runner(
     };
 
     match op.as_ref() {
-        TransformOp::None => return,
-        TransformOp::Move {
+        TransformAction::None => return,
+        TransformAction::Move {
             axis_lock,
             op_origin,
         }
-        | TransformOp::Rotate {
+        | TransformAction::Rotate {
             axis_lock,
             op_origin,
             ..
         } => draw_axis_gizmo_lines(&mut gizmos, axis_lock, op_origin),
-        TransformOp::Scale(..) => todo!(),
+        TransformAction::Scale(..) => todo!(),
     }
 
     let Ok(window) = q_windows.single() else {
@@ -175,8 +177,8 @@ fn op_runner(
     };
 
     match op.as_ref() {
-        TransformOp::None => unreachable!(),
-        TransformOp::Move {
+        TransformAction::None => unreachable!(),
+        TransformAction::Move {
             axis_lock,
             op_origin: original_pos,
         } => op_move(
@@ -189,7 +191,7 @@ fn op_runner(
             axis_lock,
             gizmos,
         ),
-        TransformOp::Rotate {
+        TransformAction::Rotate {
             axis_lock,
             op_origin: center_pos,
             original_cursor_pos,
@@ -204,7 +206,7 @@ fn op_runner(
             axis_lock,
             gizmos,
         ),
-        TransformOp::Scale(_axis_lock) => todo!(),
+        TransformAction::Scale(_axis_lock) => todo!(),
     }
 }
 
@@ -244,12 +246,12 @@ fn draw_axis_gizmo_lines(gizmos: &mut Gizmos<'_, '_>, axis_lock: &AxisLock, op_o
     }
 }
 
-fn update_axis_lock(op: &mut ResMut<TransformOp>, kb: &Res<ButtonInput<KeyCode>>) {
+fn update_axis_lock(op: &mut ResMut<TransformAction>, kb: &Res<ButtonInput<KeyCode>>) {
     match op.as_mut() {
-        TransformOp::None => (),
-        TransformOp::Move { axis_lock, .. }
-        | TransformOp::Rotate { axis_lock, .. }
-        | TransformOp::Scale(axis_lock) => {
+        TransformAction::None => (),
+        TransformAction::Move { axis_lock, .. }
+        | TransformAction::Rotate { axis_lock, .. }
+        | TransformAction::Scale(axis_lock) => {
             if kb.pressed(KeyCode::ShiftLeft) {
                 if kb.just_pressed(KeyCode::KeyX) {
                     *axis_lock = AxisLock::PlaneX
@@ -282,13 +284,13 @@ fn selection_bb_center(query: &Query<QXformOpPossible, WithSelected>) -> Vec3 {
 fn init_op(
     commands: &mut Commands,
     selection: &Query<QXformOpPossible, WithSelected>,
-    selection_state: &mut ResMut<SelectionOpsState>,
+    selection_state: &mut ResMut<SelectionActionState>,
 ) {
     for (entity, xform, og_xform) in selection.iter() {
         assert!(og_xform.is_none());
         commands.entity(entity).insert(OriginalTransform(*xform));
     }
-    **selection_state = SelectionOpsState::Transform;
+    **selection_state = SelectionActionState::Transform;
 }
 
 fn undo_changes(selection: &mut Query<QXformOpPossible, WithSelected>) {
@@ -302,26 +304,26 @@ fn undo_changes(selection: &mut Query<QXformOpPossible, WithSelected>) {
 fn cleanup_op(
     commands: &mut Commands,
     selection: &mut Query<QXformOpPossible, WithSelected>,
-    selection_state: &mut ResMut<SelectionOpsState>,
-    op: &mut TransformOp,
+    selection_state: &mut ResMut<SelectionActionState>,
+    op: &mut TransformAction,
 ) {
     match op {
-        TransformOp::None => return,
+        TransformAction::None => return,
         _ => {
             for (entity, ..) in selection.iter_mut() {
                 commands.entity(entity).remove::<OriginalTransform>();
             }
         }
     }
-    *op = TransformOp::None;
-    **selection_state = SelectionOpsState::None;
+    *op = TransformAction::None;
+    **selection_state = SelectionActionState::None;
 }
 
 fn cancel_op(
     commands: &mut Commands,
     selection: &mut Query<QXformOpPossible, WithSelected>,
-    selection_state: &mut ResMut<SelectionOpsState>,
-    op: &mut TransformOp,
+    selection_state: &mut ResMut<SelectionActionState>,
+    op: &mut TransformAction,
 ) {
     undo_changes(selection);
     cleanup_op(commands, selection, selection_state, op);
@@ -330,8 +332,8 @@ fn cancel_op(
 fn commit_op(
     commands: &mut Commands,
     selection: &mut Query<QXformOpPossible, WithSelected>,
-    selection_state: &mut ResMut<SelectionOpsState>,
-    op: &mut TransformOp,
+    selection_state: &mut ResMut<SelectionActionState>,
+    op: &mut TransformAction,
 ) {
     cleanup_op(commands, selection, selection_state, op);
 }

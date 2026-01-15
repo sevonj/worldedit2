@@ -28,7 +28,9 @@ pub fn from_dynamic_image(img: DynamicImage) -> GrayF32Image {
             ImageBuffer::from_fn(w, h, |x, y| Luma([rgba.get_pixel(x, y)[0]]))
         }
         _ => {
-            println!("heightmap::from_dynamic_image() WARNING: Image isn't 32bit scalar. Quality will suffer.");
+            println!(
+                "heightmap::from_dynamic_image() WARNING: Image isn't 32bit scalar. Quality will suffer."
+            );
             let trash = img.to_luma32f();
             ImageBuffer::from_fn(w, h, |x, y| Luma([trash.get_pixel(x, y)[0]]))
         }

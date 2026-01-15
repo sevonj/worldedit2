@@ -1,18 +1,19 @@
 mod render_target;
 
 use bevy::prelude::*;
-use bevy_egui::{
-    EguiContexts,
-    egui::{self, Frame},
-};
 
-use super::{
-    editor_pane::EditorPane,
-    ui_tiling::{TileTree, TilingPane},
-};
-use crate::editor::{selection::WithSelected, selection_ops::transform_ops::TransformOp};
+use bevy_egui::EguiContexts;
+use bevy_egui::egui;
+use bevy_egui::egui::Frame;
 
 pub use render_target::ViewportRT;
+
+use super::EditorPane;
+use crate::editor::resources::ViewportRect;
+use crate::editor::selection::WithSelected;
+use crate::editor::selection_actions::transform_action::TransformAction;
+use crate::editor::ui::ui_tiling::TileTree;
+use crate::editor::ui::ui_tiling::TilingPane;
 
 #[derive(Debug)]
 pub struct ViewportPanePlugin;
@@ -23,47 +24,6 @@ impl Plugin for ViewportPanePlugin {
         app.add_systems(Startup, register_pane);
         app.add_systems(PreUpdate, render_target::refresh_camera_target);
         app.add_systems(PostUpdate, render_target::update_viewport_img_size);
-    }
-}
-
-/// Store area occupied by viewport
-#[derive(Debug, Resource, Clone, Copy)]
-pub struct ViewportRect {
-    pub min_x: f32,
-    pub min_y: f32,
-    pub max_x: f32,
-    pub max_y: f32,
-}
-
-impl Default for ViewportRect {
-    fn default() -> Self {
-        // Non-zero placeholder size
-        Self {
-            min_x: 16.,
-            min_y: 16.,
-            max_x: 16.,
-            max_y: 16.,
-        }
-    }
-}
-
-impl From<egui::Rect> for ViewportRect {
-    fn from(rect: egui::Rect) -> Self {
-        Self {
-            min_x: rect.min.x,
-            min_y: rect.min.y,
-            max_x: rect.max.x,
-            max_y: rect.max.y,
-        }
-    }
-}
-
-impl ViewportRect {
-    pub const fn size(&self) -> egui::Vec2 {
-        egui::Vec2 {
-            x: self.max_x - self.min_x,
-            y: self.max_y - self.min_y,
-        }
     }
 }
 
@@ -156,19 +116,19 @@ fn selection_ui(ui: &mut egui::Ui, world: &mut World) {
 }
 
 fn xform_ops_ui(ui: &mut egui::Ui, world: &mut World) {
-    let op = world.resource::<TransformOp>();
+    let op = world.resource::<TransformAction>();
 
     ui.label(format!("{}", *op));
 
     match op {
-        TransformOp::None => {
+        TransformAction::None => {
             ui.label("G: Move");
             ui.label("R: Rotate");
             ui.label("S: Scale");
         }
-        TransformOp::Move { axis_lock, .. }
-        | TransformOp::Rotate { axis_lock, .. }
-        | TransformOp::Scale(axis_lock) => {
+        TransformAction::Move { axis_lock, .. }
+        | TransformAction::Rotate { axis_lock, .. }
+        | TransformAction::Scale(axis_lock) => {
             ui.label("Esc: cancel selection");
             ui.label(format!("axis: {axis_lock}"));
         }
