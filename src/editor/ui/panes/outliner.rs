@@ -17,7 +17,7 @@ pub struct OutlinerPanePlugin;
 
 impl Plugin for OutlinerPanePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, register_pane);
+        app.add_systems(Startup, OutlinerPane::create);
     }
 }
 
@@ -25,6 +25,13 @@ type SelectableQuery<'a> = (Entity, Option<&'a Name>, Option<&'a Selected>);
 
 #[derive(Debug)]
 pub struct OutlinerPane;
+
+impl OutlinerPane {
+    fn create(mut tree: ResMut<TileTree>) {
+        let tile_id = tree.register_pane(TilingPane::Outliner(OutlinerPane));
+        tree.set_share(tile_id, 0.2);
+    }
+}
 
 impl EditorPane for OutlinerPane {
     fn ui(
@@ -44,11 +51,6 @@ impl EditorPane for OutlinerPane {
     fn tab_title(&self) -> &'static str {
         "Outliner"
     }
-}
-
-fn register_pane(mut tree: ResMut<TileTree>) {
-    let tile_id = tree.register_pane(TilingPane::Outliner(OutlinerPane));
-    tree.set_share(tile_id, 0.2);
 }
 
 fn outliner_ui(
