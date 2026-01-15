@@ -1,11 +1,10 @@
-pub mod base_hmp;
 pub mod heightmap;
+mod heightmap_bundle;
 pub mod terrain_cruncher;
 mod terrain_mesh;
 
+pub use heightmap_bundle::HeightmapBundle;
 pub use terrain_mesh::TerrainMesh;
-
-pub type GrayF32Image = image::ImageBuffer<image::Luma<f32>, Vec<f32>>;
 
 // All dimensions are in metres
 pub const WORLD_SIZE: usize = 2048;

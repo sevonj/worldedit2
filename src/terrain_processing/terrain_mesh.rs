@@ -9,11 +9,7 @@ use bevy::math::prelude::*;
 use bevy::mesh::prelude::*;
 use bytemuck::cast_slice_mut;
 
-use crate::terrain_processing::GrayF32Image;
-
 use crate::terrain_processing::CELL_SIZE;
-use crate::terrain_processing::WORLD_HEIGHT;
-use crate::terrain_processing::WORLD_HEIGHT_OFFSET;
 
 const CELL_SIZE_F: f32 = CELL_SIZE as f32;
 const V_STRIDE: usize = CELL_SIZE + 1;
@@ -22,7 +18,7 @@ const NUM_V: usize = V_STRIDE * V_STRIDE;
 #[derive(Debug)]
 pub struct TerrainMesh {
     /// min corner coordinate
-    position: Vec2,
+    position: UVec2,
     vertices: Vec<Vec3>,
     uvs: Vec<Vec2>,
     indices: Vec<u32>,
@@ -31,17 +27,17 @@ pub struct TerrainMesh {
 impl TerrainMesh {
     pub const FILE_EXT: &str = "tmesh";
     pub const FILE_SIG: &[u8; 16] = b"WEdit-TMesh     ";
-    pub const FILE_VER: u32 = 0;
+    pub const FILE_VER: u32 = 1;
 
-    pub fn position(&self) -> &Vec2 {
+    pub fn position(&self) -> &UVec2 {
         &self.position
     }
 
-    pub fn position_mut(&mut self) -> &mut Vec2 {
+    pub fn position_mut(&mut self) -> &mut UVec2 {
         &mut self.position
     }
 
-    pub fn set_position(&mut self, position: Vec2) {
+    pub fn set_position(&mut self, position: UVec2) {
         self.position = position;
     }
 
@@ -68,14 +64,7 @@ impl TerrainMesh {
         mesh
     }
 
-    pub fn new(position: Vec2, hmp: GrayF32Image) -> Result<Self, &'static str> {
-        let mut this = Self::flat(position);
-        this.apply_heightmap(hmp)?;
-        Ok(this)
-    }
-
-    /// Construct new flat grid
-    pub fn flat(position: Vec2) -> Self {
+    pub fn new(position: UVec2, f: &dyn Fn(UVec2) -> f32) -> Self {
         let mut vertices = vec![Vec3::ZERO; NUM_V];
         let mut uvs = vec![Vec2::ZERO; NUM_V];
 
@@ -84,13 +73,16 @@ impl TerrainMesh {
             .zip(uvs.chunks_exact_mut(V_STRIDE))
             .enumerate()
         {
-            let zf = z as f32 + position.y;
-            let v = z as f32 / CELL_SIZE_F;
+            let pos_z = z as u32 + position.y;
+            let uv_v = z as f32 / CELL_SIZE_F;
+
             for (x, (vertex, uv)) in v_row.iter_mut().zip(uv_row.iter_mut()).enumerate() {
-                let xf = x as f32 + position.x;
-                let u = x as f32 / CELL_SIZE_F;
-                *vertex = Vec3::new(xf, 0.0, zf);
-                *uv = Vec2::new(u, v);
+                let pos_x = x as u32 + position.x;
+                let uv_u = x as f32 / CELL_SIZE_F;
+                let h = f(uvec2(pos_x, pos_z));
+
+                *vertex = Vec3::new(pos_x as f32, h, pos_z as f32);
+                *uv = Vec2::new(uv_u, uv_v);
             }
         }
 
@@ -125,53 +117,13 @@ impl TerrainMesh {
         }
     }
 
-    pub fn apply_heightmap(&mut self, hmp: GrayF32Image) -> Result<(), &'static str> {
-        if hmp.height() != hmp.width() {
-            return Err("TerrainCell::apply_heightmap(): map isn't square");
-        }
-        if hmp.width() != CELL_SIZE as u32 {
-            return Err("TerrainCell::apply_heightmap(): map doesn't match SIZE");
-        }
+    pub fn apply_height(&mut self, f: &dyn Fn(UVec2) -> f32) {
         for (i, vertex) in self.vertices.iter_mut().enumerate() {
-            let x = i % V_STRIDE;
-            let y = i / V_STRIDE;
-            if x >= CELL_SIZE || y >= CELL_SIZE {
-                // last row and column are out of range.
-                // we'll get those edges from the next cell.
-                continue;
-            }
-            vertex.y = hmp.get_pixel(x as u32, y as u32)[0] * WORLD_HEIGHT + WORLD_HEIGHT_OFFSET;
+            let mut position = self.position;
+            position.x += (i % V_STRIDE) as u32;
+            position.y += (i / V_STRIDE) as u32;
+            vertex.y = f(position);
         }
-        Ok(())
-    }
-
-    /// Matches edge vertices to neighbor
-    pub fn fix_south_seam(&mut self, other: Self) {
-        assert_eq!(other.vertices.len(), self.vertices.len());
-        let last_row_off = V_STRIDE * CELL_SIZE;
-        for i in 0..V_STRIDE {
-            let own_v = &mut self.vertices[last_row_off + i];
-            let other_v = &other.vertices[i];
-            own_v.y = other_v.y;
-        }
-    }
-
-    /// Matches edge vertices to neighbor
-    pub fn fix_east_seam(&mut self, other: Self) {
-        assert_eq!(other.vertices.len(), self.vertices.len());
-        for i in 0..CELL_SIZE {
-            let own_v = &mut self.vertices[CELL_SIZE + V_STRIDE * i];
-            let other_v = &other.vertices[i * V_STRIDE];
-            own_v.y = other_v.y;
-        }
-    }
-
-    /// Matches corner vertex to neighbor
-    pub fn fix_southeast_seam(&mut self, other: Self) {
-        assert_eq!(other.vertices.len(), self.vertices.len());
-        let own_v = &mut self.vertices[NUM_V - 1];
-        let other_v = &other.vertices[0];
-        own_v.y = other_v.y;
     }
 
     pub fn save(&self, path: &Path) -> std::io::Result<()> {
@@ -211,13 +163,13 @@ impl TerrainMesh {
         }
 
         file.read_exact(&mut buf)?;
-        let pos_x = f32::from_le_bytes(buf);
+        let pos_x = u32::from_le_bytes(buf);
         file.read_exact(&mut buf)?;
-        let pos_y = f32::from_le_bytes(buf);
+        let pos_y = u32::from_le_bytes(buf);
 
         const NUM_I: usize = CELL_SIZE * CELL_SIZE * 6; // num_quads * indices_in_quad
 
-        let position = vec2(pos_x, pos_y);
+        let position = uvec2(pos_x, pos_y);
         let mut vertices = vec![Vec3::ZERO; NUM_V];
         let mut uvs = vec![Vec2::ZERO; NUM_V];
         let mut indices = vec![0; NUM_I];
@@ -243,9 +195,13 @@ mod tests {
 
     use super::*;
 
+    const fn dummy_height_fn(_: UVec2) -> f32 {
+        0.0
+    }
+
     #[test]
     fn test_vertices() {
-        let cell = TerrainMesh::flat(Vec2::default());
+        let cell = TerrainMesh::new(UVec2::default(), &dummy_height_fn);
         let vertices = cell.vertices();
 
         for z in 0..=CELL_SIZE {

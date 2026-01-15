@@ -11,7 +11,8 @@ use image::GrayImage;
 use image::ImageBuffer;
 use image::Luma;
 
-use crate::terrain_processing::GrayF32Image;
+/// Single channel f32 image for heightmaps
+pub type GrayF32Image = image::ImageBuffer<image::Luma<f32>, Vec<f32>>;
 
 pub const FILE_EXT: &str = "hmp";
 pub const FILE_SIG: &[u8; 16] = b"WEdit-hmp_f32   ";
