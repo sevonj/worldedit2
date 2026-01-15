@@ -148,7 +148,7 @@ fn op_runner(
     q_camera: Query<QCamXform, WithCurrentCam>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
     mut gizmos: Gizmos,
-    vp_rect: Res<ViewportRect>,
+    vp_rect: Option<Res<ViewportRect>>,
 ) {
     let Ok((camera, camera_xform, camera_global)) = q_camera.single() else {
         return;
@@ -171,7 +171,9 @@ fn op_runner(
     let Ok(window) = q_windows.single() else {
         return;
     };
-
+    let Some(vp_rect) = vp_rect else {
+        return;
+    };
     let Some(cursor_pos) = cursor_position_in_viewport(&vp_rect, window) else {
         return;
     };

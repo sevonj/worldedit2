@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 
 use bevy_egui::EguiContexts;
-use bevy_egui::EguiUserTextures;
 use bevy_egui::egui;
 use bevy_egui::egui::Frame;
 
@@ -18,19 +17,27 @@ pub struct ViewportPanePlugin;
 
 impl Plugin for ViewportPanePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PreStartup, create_viewport_img);
-        app.add_systems(Startup, register_pane);
+        app.insert_resource(ViewportRect::default());
+        app.add_systems(Startup, ViewportPane::create);
     }
 }
 
 #[derive(Debug)]
 pub struct ViewportPane {
-    viewport_tex_id: egui::TextureId,
+    rt_texture_id: egui::TextureId,
 }
 
 impl ViewportPane {
-    pub fn new(viewport_tex_id: egui::TextureId) -> Self {
-        Self { viewport_tex_id }
+    fn create(
+        mut contexts: EguiContexts,
+        mut tree: ResMut<TileTree>,
+        images: ResMut<Assets<Image>>,
+        mut render_targets: ResMut<Assets<ViewportRenderTarget>>,
+    ) {
+        let render_target = ViewportRenderTarget::new(&mut contexts, images);
+        let rt_texture_id = contexts.image_id(&render_target.img).unwrap();
+        let _rt_handle = render_targets.add(render_target);
+        tree.register_pane(TilingPane::ViewPort(Self { rt_texture_id }));
     }
 }
 
@@ -53,7 +60,7 @@ impl EditorPane for ViewportPane {
                 let rect = ui.available_rect_before_wrap();
 
                 let image = egui::Image::new(egui::load::SizedTexture::new(
-                    self.viewport_tex_id,
+                    self.rt_texture_id,
                     rect.size(),
                 ));
                 image.paint_at(ui, rect);
@@ -70,27 +77,6 @@ impl EditorPane for ViewportPane {
     fn tab_title(&self) -> &'static str {
         "Scene"
     }
-}
-
-pub fn create_viewport_img(
-    egui_user_textures: ResMut<EguiUserTextures>,
-    mut commands: Commands,
-    images: ResMut<Assets<Image>>,
-) {
-    commands.insert_resource(ViewportRenderTarget::new(egui_user_textures, images));
-}
-
-fn register_pane(
-    mut tree: ResMut<TileTree>,
-    contexts: EguiContexts,
-    viewport_img: Res<ViewportRenderTarget>,
-    mut commands: Commands,
-) {
-    let viewport_tex_id = contexts.image_id(&**viewport_img).unwrap();
-    let pane = TilingPane::ViewPort(ViewportPane::new(viewport_tex_id));
-    tree.register_pane(pane);
-
-    commands.insert_resource(ViewportRect::default());
 }
 
 fn camera_controls_ui(ui: &mut egui::Ui, _world: &mut World) {

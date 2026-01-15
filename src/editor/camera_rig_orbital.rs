@@ -65,7 +65,7 @@ fn update_camera(
     mut cursor_options: Single<&mut CursorOptions, With<Window>>,
     mut query: Query<(&mut CameraRigOrbitalData, &mut Transform), With<Camera3d>>,
     op: Res<SelectionActionState>,
-    vp_rect: Res<ViewportRect>,
+    vp_rect: Option<Res<ViewportRect>>,
 ) {
     let Ok((mut data, mut xform)) = query.single_mut() else {
         return;
@@ -74,11 +74,12 @@ fn update_camera(
         refresh_camera_xform(&mut data, &mut xform);
         return;
     }
-
     let Ok(window) = q_windows.single_mut() else {
         return;
     };
-
+    let Some(vp_rect) = vp_rect else {
+        return;
+    };
     if !is_cursor_within_viewport(&vp_rect, &window) {
         return;
     };
