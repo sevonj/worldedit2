@@ -10,7 +10,6 @@ use crate::editor::Selectable;
 use crate::editor::camera_rig_orbital::CurrentCamera;
 use crate::editor::resources::ViewportRect;
 use crate::editor::selection::WithSelected;
-use crate::editor::utility::cursor_position_in_viewport;
 
 /// Transform operations for selected entities - Move, rotate, scale
 #[derive(Resource, Debug, Default, PartialEq, Clone, Copy)]
@@ -174,7 +173,7 @@ fn op_runner(
     let Some(vp_rect) = vp_rect else {
         return;
     };
-    let Some(cursor_pos) = cursor_position_in_viewport(&vp_rect, window) else {
+    let Some(cursor_pos) = vp_rect.cursor_position(window) else {
         return;
     };
 

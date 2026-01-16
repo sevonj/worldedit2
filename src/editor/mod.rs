@@ -6,7 +6,6 @@ mod selection;
 mod selection_actions;
 mod terrain_cell_preview;
 mod ui;
-mod utility;
 
 pub use selection::Selectable;
 

@@ -8,7 +8,6 @@ use bevy::window::CursorOptions;
 use bevy::window::PrimaryWindow;
 
 use super::selection_actions::SelectionActionState;
-use super::utility::is_cursor_within_viewport;
 use crate::editor::resources::ViewportRect;
 
 #[derive(Component)]
@@ -80,7 +79,7 @@ fn update_camera(
     let Some(vp_rect) = vp_rect else {
         return;
     };
-    if !is_cursor_within_viewport(&vp_rect, &window) {
+    if !vp_rect.contains_cursor(&window) {
         return;
     };
 

@@ -1,4 +1,4 @@
-use bevy::ecs::prelude::*;
+use bevy::prelude::*;
 
 use bevy_egui::egui;
 
@@ -40,5 +40,26 @@ impl ViewportRect {
             x: self.max_x - self.min_x,
             y: self.max_y - self.min_y,
         }
+    }
+
+    pub fn contains_cursor(&self, window: &Window) -> bool {
+        let Some(cursor_pos) = window.cursor_position() else {
+            return false;
+        };
+        cursor_pos.x > self.min_x
+            && cursor_pos.y > self.min_y
+            && cursor_pos.x < self.max_x
+            && cursor_pos.y < self.max_y
+    }
+
+    pub fn cursor_position(&self, window: &Window) -> Option<Vec2> {
+        let mut cursor_pos = window.cursor_position()?;
+        if !self.contains_cursor(window) {
+            return None;
+        }
+        cursor_pos.x -= self.min_x;
+        cursor_pos.y -= self.min_y;
+
+        Some(cursor_pos)
     }
 }
