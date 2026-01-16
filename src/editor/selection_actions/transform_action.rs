@@ -8,7 +8,7 @@ use super::SelectionActionState;
 use crate::editor::Colors;
 use crate::editor::Selectable;
 use crate::editor::camera_rig_orbital::CurrentCamera;
-use crate::editor::components::ViewportRect;
+use crate::editor::components::ViewportRenderTarget;
 use crate::editor::selection::WithSelected;
 
 /// Transform operations for selected entities - Move, rotate, scale
@@ -142,11 +142,11 @@ fn op_switcher(
 fn op_runner(
     op: ResMut<TransformAction>,
     q_selection: Query<QXformOp, WithSelected>,
-    q_camera: Query<(&Camera, &Transform, &GlobalTransform, &ViewportRect), WithCurrentCam>,
+    q_camera: Query<(&Camera, &Transform, &GlobalTransform, &ViewportRenderTarget), WithCurrentCam>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
     mut gizmos: Gizmos,
 ) {
-    let Ok((camera, camera_xform, camera_global, vp_rect)) = q_camera.single() else {
+    let Ok((camera, camera_xform, camera_global, render_target)) = q_camera.single() else {
         return;
     };
 
@@ -167,7 +167,7 @@ fn op_runner(
     let Ok(window) = q_windows.single() else {
         return;
     };
-    let Some(cursor_pos) = vp_rect.cursor_position(window) else {
+    let Some(cursor_pos) = render_target.cursor_position(window) else {
         return;
     };
 

@@ -6,7 +6,6 @@ use bevy_egui::egui::Frame;
 
 use super::EditorPane;
 use crate::editor::camera_rig_orbital::CameraRigOrbital;
-use crate::editor::components::ViewportRect;
 use crate::editor::components::ViewportRenderTarget;
 use crate::editor::selection::WithSelected;
 use crate::editor::selection_actions::transform_action::TransformAction;
@@ -39,11 +38,8 @@ impl MapViewPane {
     ) {
         let render_target = ViewportRenderTarget::new(&mut contexts, images);
         let rt_texture_id = contexts.image_id(&render_target.img).unwrap();
-        CameraRigOrbital::spawn_with_name(&mut commands, "MapView Camera").insert((
-            render_target,
-            ViewportRect::default(),
-            BelongsToMapView,
-        ));
+        CameraRigOrbital::spawn_with_name(&mut commands, "MapView Camera")
+            .insert((render_target, BelongsToMapView));
         tree.register_pane(TilingPane::MapView(Self { rt_texture_id }));
     }
 }
@@ -58,7 +54,7 @@ impl EditorPane for MapViewPane {
         egui::CentralPanel::default()
             .frame(Frame::NONE)
             .show_inside(ui, |ui| {
-                egui::TopBottomPanel::bottom("viewport_bottom").show_inside(ui, |ui| {
+                egui::TopBottomPanel::bottom("mapview_bottom").show_inside(ui, |ui| {
                     ui.horizontal(|ui| {
                         selection_ui(ui, world);
                     });
@@ -74,11 +70,11 @@ impl EditorPane for MapViewPane {
 
                 camera_controls_ui(ui, world);
 
-                if let Ok(mut rect_res) = world
-                    .query_filtered::<&mut ViewportRect, With<BelongsToMapView>>()
+                if let Ok(mut render_target) = world
+                    .query_filtered::<&mut ViewportRenderTarget, With<BelongsToMapView>>()
                     .single_mut(world)
                 {
-                    *rect_res = ViewportRect::from(rect);
+                    render_target.rect = rect;
                 }
             });
 

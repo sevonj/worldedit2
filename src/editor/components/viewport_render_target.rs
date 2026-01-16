@@ -9,13 +9,14 @@ use bevy::render::render_resource::TextureFormat;
 use bevy::render::render_resource::TextureUsages;
 use bevy_egui::EguiContexts;
 use bevy_egui::EguiTextureHandle;
-
-use crate::editor::components::ViewportRect;
+use bevy_egui::egui;
+use bevy_egui::egui::pos2;
 
 /// Viewport Render Target Texture
 #[derive(Component)]
 pub struct ViewportRenderTarget {
     pub img: Handle<Image>,
+    pub rect: egui::Rect,
 }
 
 impl ViewportRenderTarget {
@@ -49,12 +50,37 @@ impl ViewportRenderTarget {
         contexts.add_image(strong);
         Self {
             img: image_handle.clone(),
+            rect: egui::Rect {
+                min: pos2(0., 0.),
+                max: pos2(16., 16.),
+            },
         }
     }
 
-    pub fn update_size(&self, images: &mut ResMut<Assets<Image>>, vp_rect: &ViewportRect) {
+    pub fn contains_cursor(&self, window: &Window) -> bool {
+        let Some(cursor_pos) = window.cursor_position() else {
+            return false;
+        };
+        cursor_pos.x > self.rect.min.x
+            && cursor_pos.y > self.rect.min.y
+            && cursor_pos.x < self.rect.max.x
+            && cursor_pos.y < self.rect.max.y
+    }
+
+    pub fn cursor_position(&self, window: &Window) -> Option<Vec2> {
+        let mut cursor_pos = window.cursor_position()?;
+        if !self.contains_cursor(window) {
+            return None;
+        }
+        cursor_pos.x -= self.rect.min.x;
+        cursor_pos.y -= self.rect.min.y;
+
+        Some(cursor_pos)
+    }
+
+    fn update_size(&self, images: &mut ResMut<Assets<Image>>) {
         let img = images.get_mut(&self.img).expect("no viewport image");
-        let size = vp_rect.size();
+        let size = self.rect.size();
 
         // Zero-size image panics and is useless anyway.
         if size.x < 1.0 || size.y < 1.0 {
@@ -94,12 +120,9 @@ impl ViewportRenderTargetPlugin {
         }
     }
 
-    fn post_update(
-        mut images: ResMut<Assets<Image>>,
-        q: Query<(&mut ViewportRenderTarget, &ViewportRect)>,
-    ) {
-        for (rt, vp_rect) in q.iter() {
-            rt.update_size(&mut images, vp_rect);
+    fn post_update(mut images: ResMut<Assets<Image>>, q: Query<&mut ViewportRenderTarget>) {
+        for rt in q.iter() {
+            rt.update_size(&mut images);
         }
     }
 }

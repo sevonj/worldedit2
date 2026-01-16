@@ -7,8 +7,9 @@ use bevy::window::CursorGrabMode;
 use bevy::window::CursorOptions;
 use bevy::window::PrimaryWindow;
 
+use crate::editor::components::ViewportRenderTarget;
+
 use super::selection_actions::SelectionActionState;
-use crate::editor::components::ViewportRect;
 
 #[derive(Component)]
 pub struct CurrentCamera;
@@ -78,7 +79,11 @@ impl CameraRigOrbital {
         mut q_windows: Query<&mut Window, With<PrimaryWindow>>,
         mut cursor_options: Single<&mut CursorOptions, With<Window>>,
         mut q_camera: Query<
-            (&mut CameraRigOrbitalData, &mut Transform, &ViewportRect),
+            (
+                &mut CameraRigOrbitalData,
+                &mut Transform,
+                &ViewportRenderTarget,
+            ),
             With<Camera3d>,
         >,
         op: Res<SelectionActionState>,
@@ -87,8 +92,8 @@ impl CameraRigOrbital {
             return;
         };
 
-        for (mut data, mut xform, vp_rect) in q_camera.iter_mut() {
-            if !vp_rect.contains_cursor(&window) {
+        for (mut data, mut xform, render_target) in q_camera.iter_mut() {
+            if !render_target.contains_cursor(&window) {
                 continue;
             };
 
