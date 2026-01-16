@@ -146,62 +146,62 @@ fn op_runner(
     q_windows: Query<&Window, With<PrimaryWindow>>,
     mut gizmos: Gizmos,
 ) {
-    let Ok((camera, camera_xform, camera_global, render_target)) = q_camera.single() else {
-        return;
-    };
-
-    match op.as_ref() {
-        TransformAction::None => return,
-        TransformAction::Move {
-            axis_lock,
-            op_origin,
-        }
-        | TransformAction::Rotate {
-            axis_lock,
-            op_origin,
-            ..
-        } => draw_axis_gizmo_lines(&mut gizmos, axis_lock, op_origin),
-        TransformAction::Scale(..) => todo!(),
-    }
-
     let Ok(window) = q_windows.single() else {
         return;
     };
-    let Some(cursor_pos) = render_target.cursor_position(window) else {
-        return;
-    };
 
-    match op.as_ref() {
-        TransformAction::None => unreachable!(),
-        TransformAction::Move {
-            axis_lock,
-            op_origin: original_pos,
-        } => op_move(
-            q_selection,
-            camera,
-            camera_xform,
-            camera_global,
-            original_pos,
-            cursor_pos,
-            axis_lock,
-            gizmos,
-        ),
-        TransformAction::Rotate {
-            axis_lock,
-            op_origin: center_pos,
-            original_cursor_pos,
-        } => op_rotate(
-            q_selection,
-            camera,
-            camera_xform,
-            camera_global,
-            center_pos,
-            cursor_pos,
-            *original_cursor_pos,
-            axis_lock,
-            gizmos,
-        ),
-        TransformAction::Scale(_axis_lock) => todo!(),
+    for (camera, camera_xform, camera_global, render_target) in q_camera.iter() {
+        let Some(cursor_pos) = render_target.cursor_position(window) else {
+            continue;
+        };
+
+        match op.as_ref() {
+            TransformAction::None => return,
+            TransformAction::Move {
+                axis_lock,
+                op_origin,
+            }
+            | TransformAction::Rotate {
+                axis_lock,
+                op_origin,
+                ..
+            } => draw_axis_gizmo_lines(&mut gizmos, axis_lock, op_origin),
+            TransformAction::Scale(..) => todo!(),
+        }
+
+        match op.as_ref() {
+            TransformAction::None => unreachable!(),
+            TransformAction::Move {
+                axis_lock,
+                op_origin: original_pos,
+            } => op_move(
+                q_selection,
+                camera,
+                camera_xform,
+                camera_global,
+                original_pos,
+                cursor_pos,
+                axis_lock,
+                gizmos,
+            ),
+            TransformAction::Rotate {
+                axis_lock,
+                op_origin: center_pos,
+                original_cursor_pos,
+            } => op_rotate(
+                q_selection,
+                camera,
+                camera_xform,
+                camera_global,
+                center_pos,
+                cursor_pos,
+                *original_cursor_pos,
+                axis_lock,
+                gizmos,
+            ),
+            TransformAction::Scale(_axis_lock) => todo!(),
+        }
+        break;
     }
 }
 
