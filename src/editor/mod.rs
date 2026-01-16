@@ -1,4 +1,5 @@
 mod camera_rig_orbital;
+mod camera_rig_topdown;
 mod colors;
 mod components;
 mod gizmos;
@@ -10,6 +11,7 @@ mod ui;
 pub use selection::Selectable;
 
 use camera_rig_orbital::CameraRigOrbital;
+use camera_rig_topdown::CameraRigTopdown;
 use colors::Colors;
 use gizmos::GridFloorPlugin;
 use selection::SelectionPlugin;
@@ -27,6 +29,7 @@ impl Plugin for EditorPlugin {
 
         app.add_plugins(EditorGuiPlugin);
         app.add_plugins(CameraRigOrbital);
+        app.add_plugins(CameraRigTopdown);
         app.add_plugins(SelectionPlugin);
         app.add_plugins(SelectionActionsPlugin);
         app.add_plugins(GridFloorPlugin);

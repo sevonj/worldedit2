@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 
-use bevy::input::mouse::MouseMotion;
 use bevy::input::mouse::MouseScrollUnit;
 use bevy::input::mouse::MouseWheel;
 use bevy::window::CursorGrabMode;
@@ -15,16 +14,14 @@ use super::selection_actions::SelectionActionState;
 pub struct CurrentCamera;
 
 #[derive(Component)]
-struct CameraRigOrbitalData {
-    /// Position the camera orbits around
+struct OrbitXform {
     pub origin: Vec3,
-    /// Cam distance from origin
     pub distance: f32,
     pub angle_x: f32,
     pub angle_y: f32,
 }
 
-impl Default for CameraRigOrbitalData {
+impl Default for OrbitXform {
     fn default() -> Self {
         Self {
             origin: Vec3::ZERO,
@@ -54,7 +51,7 @@ impl<'a> CameraRigOrbital {
         name: impl Into<std::borrow::Cow<'static, str>>,
     ) -> EntityCommands<'a> {
         let mut xform = Transform::default();
-        let mut data = CameraRigOrbitalData::default();
+        let mut data = OrbitXform::default();
 
         Self::refresh_xform(&mut data, &mut xform);
 
@@ -73,19 +70,12 @@ impl CameraRigOrbital {
     #[allow(clippy::too_many_arguments)]
     fn update(
         mouse_b: Res<ButtonInput<MouseButton>>,
-        mut evr_mouse: MessageReader<MouseMotion>,
+        mut evr_mouse: MessageReader<CursorMoved>,
         mut evr_scroll: MessageReader<MouseWheel>,
         keyb: Res<ButtonInput<KeyCode>>,
         mut q_windows: Query<&mut Window, With<PrimaryWindow>>,
         mut cursor_options: Single<&mut CursorOptions, With<Window>>,
-        mut q_camera: Query<
-            (
-                &mut CameraRigOrbitalData,
-                &mut Transform,
-                &ViewportRenderTarget,
-            ),
-            With<Camera3d>,
-        >,
+        mut q_camera: Query<(&mut OrbitXform, &mut Transform, &ViewportRenderTarget)>,
         op: Res<SelectionActionState>,
     ) {
         let Ok(window) = q_windows.single_mut() else {
@@ -104,29 +94,24 @@ impl CameraRigOrbital {
 
             if mouse_b.pressed(MouseButton::Middle) {
                 cursor_options.grab_mode = CursorGrabMode::Locked;
-                let mut input_vec = Vec2::ZERO;
-
                 for ev in evr_mouse.read() {
-                    input_vec.x += ev.delta.x;
-                    input_vec.y += ev.delta.y;
+                    if let Some(delta) = ev.delta {
+                        if keyb.pressed(KeyCode::ShiftLeft) {
+                            const MAX_X: f32 = std::f32::consts::PI / 2.0;
+                            const MIN_X: f32 = -MAX_X;
+                            data.angle_x -= delta.y * 0.01;
+                            data.angle_x = data.angle_x.clamp(MIN_X, MAX_X);
+                            data.angle_y -= delta.x * 0.01;
+                        } else {
+                            let dist_mult = 0.00085 * data.distance;
+                            data.origin -= xform.local_x() * delta.x * dist_mult;
+                            data.origin += xform.local_y() * delta.y * dist_mult;
+                        }
+                    }
                 }
-
-                if keyb.pressed(KeyCode::ShiftLeft) {
-                    const MAX_X: f32 = std::f32::consts::PI / 2.0;
-                    const MIN_X: f32 = -MAX_X;
-                    data.angle_x -= input_vec.y * 0.01;
-                    data.angle_x = data.angle_x.clamp(MIN_X, MAX_X);
-                    data.angle_y -= input_vec.x * 0.01;
-                } else {
-                    let dist_mult = 0.00085 * data.distance;
-                    data.origin -= xform.local_x() * input_vec.x * dist_mult;
-                    data.origin += xform.local_y() * input_vec.y * dist_mult;
-                }
-
                 Self::refresh_xform(&mut data, &mut xform);
             } else {
                 cursor_options.grab_mode = CursorGrabMode::None;
-
                 for ev in evr_scroll.read() {
                     let mut mult = match ev.unit {
                         MouseScrollUnit::Line => 0.8 * ev.y.abs(),
@@ -138,13 +123,12 @@ impl CameraRigOrbital {
                     }
                     data.distance *= mult;
                 }
-
                 Self::refresh_xform(&mut data, &mut xform);
             }
         }
     }
 
-    fn refresh_xform(data: &mut CameraRigOrbitalData, xform: &mut Transform) {
+    fn refresh_xform(data: &mut OrbitXform, xform: &mut Transform) {
         xform.rotation = Quat::from_rotation_x(data.angle_x);
         xform.rotate(Quat::from_rotation_y(data.angle_y));
         let offset = xform.local_z() * data.distance;

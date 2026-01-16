@@ -5,7 +5,7 @@ use bevy_egui::egui;
 use bevy_egui::egui::Frame;
 
 use super::EditorPane;
-use crate::editor::camera_rig_orbital::CameraRigOrbital;
+use crate::editor::camera_rig_topdown::CameraRigTopdown;
 use crate::editor::components::ViewportRenderTarget;
 use crate::editor::selection::WithSelected;
 use crate::editor::selection_actions::transform_action::TransformAction;
@@ -38,7 +38,7 @@ impl MapViewPane {
     ) {
         let render_target = ViewportRenderTarget::new(&mut contexts, images);
         let rt_texture_id = contexts.image_id(&render_target.img).unwrap();
-        CameraRigOrbital::spawn_with_name(&mut commands, "MapView Camera")
+        CameraRigTopdown::spawn_with_name(&mut commands, "MapView Camera")
             .insert((render_target, BelongsToMapView));
         tree.register_pane(TilingPane::MapView(Self { rt_texture_id }));
     }
