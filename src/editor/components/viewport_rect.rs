@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy_egui::egui;
 
 /// Stores area occupied by viewport
-#[derive(Debug, Resource, Clone, Copy)]
+#[derive(Debug, Component, Clone, Copy)]
 pub struct ViewportRect {
     pub min_x: f32,
     pub min_y: f32,

@@ -10,11 +10,10 @@ use bevy::render::render_resource::TextureUsages;
 use bevy_egui::EguiContexts;
 use bevy_egui::EguiTextureHandle;
 
-use crate::editor::camera_rig_orbital::CurrentCamera;
-use crate::editor::resources::ViewportRect;
+use crate::editor::components::ViewportRect;
 
 /// Viewport Render Target Texture
-#[derive(Asset, Reflect)]
+#[derive(Component)]
 pub struct ViewportRenderTarget {
     pub img: Handle<Image>,
 }
@@ -53,7 +52,7 @@ impl ViewportRenderTarget {
         }
     }
 
-    pub fn update_size(&self, images: &mut ResMut<Assets<Image>>, vp_rect: &Res<ViewportRect>) {
+    pub fn update_size(&self, images: &mut ResMut<Assets<Image>>, vp_rect: &ViewportRect) {
         let img = images.get_mut(&self.img).expect("no viewport image");
         let size = vp_rect.size();
 
@@ -72,11 +71,7 @@ impl ViewportRenderTarget {
     }
 
     // Sets camera to target viewport RT image
-    fn refresh_camera_target(&self, q_camera: &mut Query<&mut Camera, With<CurrentCamera>>) {
-        let Ok(mut camera) = q_camera.single_mut() else {
-            return;
-        };
-
+    fn refresh_camera_target(&self, camera: &mut Camera) {
         camera.viewport = None;
         camera.target = RenderTarget::Image(ImageRenderTarget::from(self.img.clone()));
     }
@@ -87,36 +82,24 @@ pub struct ViewportRenderTargetPlugin;
 
 impl Plugin for ViewportRenderTargetPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PreStartup, Self::pre_startup);
         app.add_systems(PreUpdate, Self::pre_update);
         app.add_systems(PostUpdate, Self::post_update);
     }
 }
 
 impl ViewportRenderTargetPlugin {
-    fn pre_startup(mut commands: Commands) {
-        commands.insert_resource(Assets::<ViewportRenderTarget>::default());
-    }
-
-    fn pre_update(
-        mut q_camera: Query<&mut Camera, With<CurrentCamera>>,
-        assets: Res<Assets<ViewportRenderTarget>>,
-    ) {
-        for (_, rt) in assets.iter() {
-            rt.refresh_camera_target(&mut q_camera);
+    fn pre_update(mut q: Query<(&mut ViewportRenderTarget, &mut Camera)>) {
+        for (rt, mut camera) in q.iter_mut() {
+            rt.refresh_camera_target(&mut camera);
         }
     }
 
     fn post_update(
         mut images: ResMut<Assets<Image>>,
-        vp_rect: Option<Res<ViewportRect>>,
-        assets: Res<Assets<ViewportRenderTarget>>,
+        q: Query<(&mut ViewportRenderTarget, &ViewportRect)>,
     ) {
-        let Some(vp_rect) = vp_rect else {
-            return;
-        };
-        for (_, rt) in assets.iter() {
-            rt.update_size(&mut images, &vp_rect);
+        for (rt, vp_rect) in q.iter() {
+            rt.update_size(&mut images, vp_rect);
         }
     }
 }

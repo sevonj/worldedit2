@@ -1,6 +1,8 @@
+mod map_view;
 mod outliner;
 mod viewport3d;
 
+pub use map_view::{MapViewPane, MapViewPanePlugin};
 pub use outliner::{OutlinerPane, OutlinerPanePlugin};
 pub use viewport3d::{ViewportPane, ViewportPanePlugin};
 

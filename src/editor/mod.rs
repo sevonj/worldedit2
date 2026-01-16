@@ -1,7 +1,7 @@
 mod camera_rig_orbital;
 mod colors;
+mod components;
 mod gizmos;
-mod resources;
 mod selection;
 mod selection_actions;
 mod terrain_cell_preview;
@@ -23,7 +23,7 @@ pub struct EditorPlugin;
 
 impl Plugin for EditorPlugin {
     fn build(&self, app: &mut bevy::app::App) {
-        app.add_plugins(resources::ViewportRenderTargetPlugin);
+        app.add_plugins(components::ViewportRenderTargetPlugin);
 
         app.add_plugins(EditorGuiPlugin);
         app.add_plugins(CameraRigOrbital);

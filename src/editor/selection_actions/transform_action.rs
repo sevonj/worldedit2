@@ -8,7 +8,7 @@ use super::SelectionActionState;
 use crate::editor::Colors;
 use crate::editor::Selectable;
 use crate::editor::camera_rig_orbital::CurrentCamera;
-use crate::editor::resources::ViewportRect;
+use crate::editor::components::ViewportRect;
 use crate::editor::selection::WithSelected;
 
 /// Transform operations for selected entities - Move, rotate, scale
@@ -61,8 +61,6 @@ type QXformOpPossible<'a> = (Entity, &'a mut Transform, Option<&'a OriginalTrans
 
 /// Query: Transform op in progress
 type QXformOp<'a> = (&'a mut Transform, &'a OriginalTransform);
-
-type QCamXform<'a> = (&'a Camera, &'a Transform, &'a GlobalTransform);
 
 type WithCurrentCam = (With<CurrentCamera>, Without<Selectable>);
 
@@ -144,12 +142,11 @@ fn op_switcher(
 fn op_runner(
     op: ResMut<TransformAction>,
     q_selection: Query<QXformOp, WithSelected>,
-    q_camera: Query<QCamXform, WithCurrentCam>,
+    q_camera: Query<(&Camera, &Transform, &GlobalTransform, &ViewportRect), WithCurrentCam>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
     mut gizmos: Gizmos,
-    vp_rect: Option<Res<ViewportRect>>,
 ) {
-    let Ok((camera, camera_xform, camera_global)) = q_camera.single() else {
+    let Ok((camera, camera_xform, camera_global, vp_rect)) = q_camera.single() else {
         return;
     };
 
@@ -168,9 +165,6 @@ fn op_runner(
     }
 
     let Ok(window) = q_windows.single() else {
-        return;
-    };
-    let Some(vp_rect) = vp_rect else {
         return;
     };
     let Some(cursor_pos) = vp_rect.cursor_position(window) else {

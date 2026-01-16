@@ -14,23 +14,23 @@ use crate::editor::ui::ui_tiling::TileTree;
 use crate::editor::ui::ui_tiling::TilingPane;
 
 #[derive(Component)]
-struct BelongsToViewport3d;
+struct BelongsToMapView;
 
 #[derive(Debug)]
-pub struct ViewportPanePlugin;
+pub struct MapViewPanePlugin;
 
-impl Plugin for ViewportPanePlugin {
+impl Plugin for MapViewPanePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, ViewportPane::create);
+        app.add_systems(Startup, MapViewPane::create);
     }
 }
 
 #[derive(Debug)]
-pub struct ViewportPane {
+pub struct MapViewPane {
     rt_texture_id: egui::TextureId,
 }
 
-impl ViewportPane {
+impl MapViewPane {
     fn create(
         mut contexts: EguiContexts,
         mut tree: ResMut<TileTree>,
@@ -39,16 +39,16 @@ impl ViewportPane {
     ) {
         let render_target = ViewportRenderTarget::new(&mut contexts, images);
         let rt_texture_id = contexts.image_id(&render_target.img).unwrap();
-        CameraRigOrbital::spawn_with_name(&mut commands, "Scene Camera").insert((
+        CameraRigOrbital::spawn_with_name(&mut commands, "MapView Camera").insert((
             render_target,
             ViewportRect::default(),
-            BelongsToViewport3d,
+            BelongsToMapView,
         ));
-        tree.register_pane(TilingPane::ViewPort(Self { rt_texture_id }));
+        tree.register_pane(TilingPane::MapView(Self { rt_texture_id }));
     }
 }
 
-impl EditorPane for ViewportPane {
+impl EditorPane for MapViewPane {
     fn ui(
         &mut self,
         ui: &mut bevy_egui::egui::Ui,
@@ -75,7 +75,7 @@ impl EditorPane for ViewportPane {
                 camera_controls_ui(ui, world);
 
                 if let Ok(mut rect_res) = world
-                    .query_filtered::<&mut ViewportRect, With<BelongsToViewport3d>>()
+                    .query_filtered::<&mut ViewportRect, With<BelongsToMapView>>()
                     .single_mut(world)
                 {
                     *rect_res = ViewportRect::from(rect);
@@ -86,7 +86,7 @@ impl EditorPane for ViewportPane {
     }
 
     fn tab_title(&self) -> &'static str {
-        "Scene"
+        "Map View"
     }
 }
 

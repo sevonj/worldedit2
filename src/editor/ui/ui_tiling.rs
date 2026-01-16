@@ -15,11 +15,13 @@ use egui_tiles::{Behavior, Container, SimplificationOptions, Tile, TileId, Tiles
 
 use super::panes::EditorPane;
 
+use super::panes::MapViewPane;
 use super::panes::OutlinerPane;
 use super::panes::ViewportPane;
 
 #[derive(Debug, Resource)]
 pub enum TilingPane {
+    MapView(MapViewPane),
     ViewPort(ViewportPane),
     Outliner(OutlinerPane),
 }
@@ -67,6 +69,7 @@ struct TreeBehavior<'a> {
 impl Behavior<TilingPane> for TreeBehavior<'_> {
     fn tab_title_for_pane(&mut self, pane: &TilingPane) -> egui::WidgetText {
         match pane {
+            TilingPane::MapView(pane) => pane.tab_title().into(),
             TilingPane::ViewPort(pane) => pane.tab_title().into(),
             TilingPane::Outliner(pane) => pane.tab_title().into(),
         }
@@ -86,6 +89,7 @@ impl Behavior<TilingPane> for TreeBehavior<'_> {
         pane: &mut TilingPane,
     ) -> egui_tiles::UiResponse {
         match pane {
+            TilingPane::MapView(pane) => pane.ui(ui, self.world, &mut self.commands),
             TilingPane::ViewPort(pane) => pane.ui(ui, self.world, &mut self.commands),
             TilingPane::Outliner(pane) => pane.ui(ui, self.world, &mut self.commands),
         }

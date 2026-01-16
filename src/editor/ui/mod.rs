@@ -13,7 +13,8 @@ impl Plugin for EditorGuiPlugin {
         app.add_plugins(EguiPlugin::default());
         app.add_plugins(UiTilingPlugin);
 
-        app.add_plugins(panes::ViewportPanePlugin);
         app.add_plugins(panes::OutlinerPanePlugin);
+        app.add_plugins(panes::ViewportPanePlugin);
+        app.add_plugins(panes::MapViewPanePlugin);
     }
 }
